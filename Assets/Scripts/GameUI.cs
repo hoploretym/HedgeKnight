@@ -1,90 +1,154 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine.SceneManagement;
 
 public class GameUI : MonoBehaviour
 {
     private GameManager gameManager;
     public Button startButton;
     public Button endTurnButton;
+    public Button restartButton;
     public TextMeshProUGUI logText;
-    public Image playerHead;
-    public Image playerTorso;
-    public Image enemyHead;
-    public Image enemyTorso;
-    public Sprite[] damageSprites;
+
+    // 🎭 Базовые спрайты и повреждения
+    public Image playerBaseSprite;
+    public Image playerHeadMask;
+    public Image playerTorsoMask;
+    public Image enemyBaseSprite;
+    public Image enemyHeadMask;
+    public Image enemyTorsoMask;
+
+    public Sprite headDamage1, headDamage2;
+    public Sprite torsoDamage1, torsoDamage2, torsoDamage3;
 
     void Start()
     {
-        // Если GameManager не задан через Inspector, находим его
-        if (gameManager == null)
-        {
-            gameManager = FindObjectOfType<GameManager>();
-        }
-
-        if (gameManager == null)
-        {
-            Debug.LogError("GameManager не найден! Проверь, добавлен ли он в сцену.");
-            return;
-        }
-
+        gameManager = FindObjectOfType<GameManager>();
         startButton.onClick.AddListener(StartGame);
         endTurnButton.onClick.AddListener(EndTurn);
         endTurnButton.gameObject.SetActive(false);
+        restartButton.onClick.AddListener(RestartBattle);
+        restartButton.gameObject.SetActive(false); // Скрываем до начала боя
+
+
+        // Скрываем урон при старте
+        ResetDamageMasks();
     }
 
     void StartGame()
     {
-        if (gameManager == null) return;
-
         ClearLog();
         LogAction("Бой начался!");
-
         gameManager.StartBattle();
         startButton.gameObject.SetActive(false);
         endTurnButton.gameObject.SetActive(true);
+        restartButton.gameObject.SetActive(true);
+
+        // Сбрасываем урон перед началом
+        ResetDamageMasks();
     }
 
     void EndTurn()
     {
-        if (gameManager == null) return;
-
         gameManager.FinishTurn();
     }
 
-    public void UpdateCharacterDamage(Character character, string bodyPart, int hits)
+    public void RestartBattle()
     {
-        Image targetImage = null;
-
-        if (character.IsPlayer)
-        {
-            if (bodyPart == "Head") targetImage = playerHead;
-            else if (bodyPart == "Torso") targetImage = playerTorso;
-        }
-        else
-        {
-            if (bodyPart == "Head") targetImage = enemyHead;
-            else if (bodyPart == "Torso") targetImage = enemyTorso;
-        }
-
-        if (targetImage == null)
-        {
-            Debug.LogError($"Не найдено изображение для {bodyPart} у {character.name}!");
-            return;
-        }
-
-        if (hits == 1) targetImage.sprite = damageSprites[1];
-        else if (hits >= 2) targetImage.sprite = damageSprites[2];
+    SceneManager.LoadScene(SceneManager.GetActiveScene().name); // Перезагружаем сцену
     }
 
-    public void ShowPlayedCards(Card playerCard, Card enemyCard)
+    // 🩸 ОБНОВЛЕНИЕ ПОВРЕЖДЕНИЙ
+public void UpdateCharacterDamage(Character character, string bodyPart, int hits)
+{
+    Image targetMask = null;
+    Color damageColor = new Color(1, 1, 1, 0); // По умолчанию прозрачный
+
+    if (character.IsPlayer)
     {
-        if (playerCard == null || enemyCard == null)
+        if (bodyPart == "Head")
+        {
+            targetMask = playerHeadMask;
+            if (hits == 1) damageColor = new Color(240f / 255f, 128f / 255f, 128f / 255f, 1f); // #F08080
+            else if (hits >= 2) damageColor = new Color(139f / 255f, 0f, 0f, 1f); // #8B0000
+        }
+        else if (bodyPart == "Torso")
+        {
+            targetMask = playerTorsoMask;
+            if (hits == 1) damageColor = new Color(240f / 255f, 128f / 255f, 128f / 255f, 1f); // #F08080
+            else if (hits == 2) damageColor = new Color(178f / 255f, 34f / 255f, 34f / 255f, 1f); // #B22222
+            else if (hits >= 3) damageColor = new Color(139f / 255f, 0f, 0f, 1f); // #8B0000
+        }
+    }
+    else
+    {
+        if (bodyPart == "Head")
+        {
+            targetMask = enemyHeadMask;
+            if (hits == 1) damageColor = new Color(240f / 255f, 128f / 255f, 128f / 255f, 1f); // #F08080
+            else if (hits >= 2) damageColor = new Color(139f / 255f, 0f, 0f, 1f); // #8B0000
+        }
+        else if (bodyPart == "Torso")
+        {
+            targetMask = enemyTorsoMask;
+            if (hits == 1) damageColor = new Color(240f / 255f, 128f / 255f, 128f / 255f, 1f); // #F08080
+            else if (hits == 2) damageColor = new Color(178f / 255f, 34f / 255f, 34f / 255f, 1f); // #B22222
+            else if (hits >= 3) damageColor = new Color(139f / 255f, 0f, 0f, 1f); // #8B0000
+        }
+    }
+
+    if (targetMask == null) return;
+
+    targetMask.color = damageColor;
+}
+
+
+
+    // 🔄 СБРОС ПОВРЕЖДЕНИЙ
+private void ResetDamageMasks()
+{
+    playerHeadMask.color = new Color(1, 1, 1, 0); // Полностью прозрачный
+    playerTorsoMask.color = new Color(1, 1, 1, 0);
+    enemyHeadMask.color = new Color(1, 1, 1, 0);
+    enemyTorsoMask.color = new Color(1, 1, 1, 0);
+}
+
+    // 🔶 **ВОЗВРАЩАЕМ UpdateCardSelection()**
+    public void UpdateCardSelection(List<Card> selectedCards)
+    {
+        foreach (Transform child in gameManager.playerHand.handPanel)
+        {
+            CardButton cardButton = child.GetComponent<CardButton>();
+            if (cardButton != null && cardButton.Card != null)
+            {
+                child.GetComponent<Image>().color = selectedCards.Contains(cardButton.Card) ? Color.yellow : Color.white;
+            }
+        }
+    }
+
+    // 🔷 **ВОЗВРАЩАЕМ RefreshHandUI()**
+    public void RefreshHandUI()
+    {
+        LogAction("<color=#00FF00>Обновление руки!</color>");
+    }
+
+    public void ShowPlayedCards(List<Card> playerCards, Card enemyCard)
+    {
+        if (playerCards == null || playerCards.Count == 0 || enemyCard == null)
         {
             Debug.LogError("Ошибка: Одна из карт null!");
             return;
         }
-        LogAction($"Игрок сыграл: {playerCard.Name}, Враг сыграл: {enemyCard.Name}");
+
+        string logMessage = $"<b>Игрок сыграл:</b> {string.Join(", ", playerCards.Select(card => card.Name))}\n" +
+                            $"<b>Оппонент сыграл:</b> {enemyCard.Name}\n" +
+                            "<size=18>---------------------------</size>";
+
+        ClearLog();
+        LogAction(logMessage);
     }
 
     public void LogAction(string message)
@@ -101,10 +165,5 @@ public class GameUI : MonoBehaviour
         {
             logText.text = "";
         }
-    }
-
-    public void RefreshHandUI()
-    {
-        LogAction("Обновление руки!");
     }
 }

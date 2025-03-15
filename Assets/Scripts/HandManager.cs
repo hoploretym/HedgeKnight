@@ -8,7 +8,7 @@ public class HandManager : MonoBehaviour
     public GameObject cardPrefab;
     public List<Card> cardsInHand = new List<Card>();
     private Deck deck;
-    private int selectedCardIndex = -1; // Индекс выбранной карты
+    private List<int> selectedCardsIndexes = new List<int>();
 
     public void Initialize(Deck deckReference)
     {
@@ -17,119 +17,36 @@ public class HandManager : MonoBehaviour
     }
 
     public void DrawNewHand()
-    {
-        if (deck == null)
-        {
-            Debug.LogError("Ошибка: deck в HandManager == null! Проверь, задана ли колода в инспекторе.");
-            return;
-        }
-
-        Debug.Log($"Раздача карт. Количество карт в колоде: {deck.CardsCount()}");
-        Debug.Log($"{gameObject.name} раздает карты в {handPanel.name}");
-
-
-        ClearHand();
-        cardsInHand.Clear();
-
-        for (int i = 0; i < 5; i++)
-        {
-            Card newCard = deck.DrawCard();
-            if (newCard != null)
-            {
-                cardsInHand.Add(newCard);
-                CreateCardUI(newCard, i);
-            }
-        }
-    }
-
-public void RemoveCard(int index)
 {
-    if (index >= 0 && index < cardsInHand.Count)
+    if (deck == null)
     {
-        Debug.Log($"Удаляем карту с индексом: {index} ({cardsInHand[index].Name})");
-
-        cardsInHand.RemoveAt(index); // Удаляем карту из списка
-        ClearHand(); // Чистим UI
-        RedrawHand(); // Перерисовываем карты
+        Debug.LogError("[HandManager] Ошибка: deck в HandManager == null! Проверь, задана ли колода в инспекторе.");
+        return;
     }
+
+    Debug.Log($"[HandManager] Добираем карты. Количество карт в колоде: {deck.CardsCount()}");
+
+    ClearHand();
+    cardsInHand.Clear();
+    selectedCardsIndexes.Clear();
+
+    for (int i = 0; i < 5; i++)
+    {
+        Card newCard = deck.DrawCard();
+        if (newCard != null)
+        {
+            cardsInHand.Add(newCard);
+            Debug.Log($"[HandManager] Добавлена карта в руку: {newCard.Name}");
+            CreateCardUI(newCard, i);
+        }
+        else
+        {
+            Debug.LogWarning($"[HandManager] Карта {i} не была добрана, колода пуста.");
+        }
+    }
+
+    Debug.Log($"[HandManager] Всего карт в руке после добора: {cardsInHand.Count}");
 }
-
-private void RedrawHand()
-{
-    Debug.Log("Перерисовка руки. Осталось карт: " + cardsInHand.Count);
-    
-    for (int i = 0; i < cardsInHand.Count; i++)
-    {
-        CreateCardUI(cardsInHand[i], i); // Генерируем карту с новым индексом
-    }
-}
-
-    private void CreateCardUI(Card card, int index)
-    {
-        if (cardPrefab == null)
-        {
-            Debug.LogError("Ошибка: `cardPrefab` не назначен в HandManager!");
-            return;
-        }
-
-        if (handPanel == null)
-        {
-            Debug.LogError("Ошибка: `handPanel` не назначен в HandManager!");
-            return;
-        }
-
-        GameObject cardObj = Instantiate(cardPrefab, handPanel);
-        cardObj.transform.SetParent(handPanel, false); 
-        cardObj.transform.localScale = Vector3.one;
-
-        CardButton cardButton = cardObj.GetComponent<CardButton>();
-        if (cardButton == null)
-        {
-            Debug.LogError("Ошибка: У `cardPrefab` нет `CardButton`!");
-            return;
-        }
-
-        if (cardButton.cardNameText == null)
-        {
-            Debug.LogError("Ошибка: `cardNameText` не назначен в `CardButton`!");
-            return;
-        }
-
-        cardButton.cardNameText.text = card.Name;
-        cardButton.Initialize(index, this);
-    }
-
-    public void SelectCard(int index)
-    {
-        if (selectedCardIndex == index) // Если та же карта – отменяем выбор
-        {
-            selectedCardIndex = -1;
-            return;
-        }
-
-        selectedCardIndex = index;
-        Debug.Log($"Выбрана карта с индексом: {index}");
-
-        // Сбрасываем выделение у всех карт
-        foreach (Transform child in handPanel)
-        {
-            Image img = child.GetComponent<Image>();
-            if (img != null) img.color = Color.white;
-        }
-
-        // Выделяем выбранную карту
-        if (index >= 0 && index < handPanel.childCount)
-        {
-            Transform selectedCard = handPanel.GetChild(index);
-            Image selectedImg = selectedCard.GetComponent<Image>();
-            if (selectedImg != null) selectedImg.color = Color.yellow;
-        }
-    }
-
-    public int GetSelectedCardIndex()
-    {
-        return selectedCardIndex;
-    }
 
     private void ClearHand()
     {
@@ -139,7 +56,64 @@ private void RedrawHand()
         }
     }
 
-    public Card GetRandomCard() // Противник случайно выбирает карту
+    private void CreateCardUI(Card card, int index)
+{
+    if (cardPrefab == null)
+    {
+        Debug.LogError("Ошибка: `cardPrefab` не назначен в HandManager!");
+        return;
+    }
+
+    if (handPanel == null)
+    {
+        Debug.LogError("Ошибка: `handPanel` не назначен в HandManager!");
+        return;
+    }
+
+    GameObject cardObj = Instantiate(cardPrefab, handPanel);
+    cardObj.transform.SetParent(handPanel, false);
+    cardObj.transform.localScale = Vector3.one;
+
+    CardButton cardButton = cardObj.GetComponent<CardButton>();
+    if (cardButton == null)
+    {
+        Debug.LogError("Ошибка: У `cardPrefab` нет `CardButton`!");
+        return;
+    }
+
+    if (cardButton.cardNameText == null)
+    {
+        Debug.LogError("Ошибка: `cardNameText` не назначен в `CardButton`!");
+        return;
+    }
+
+    cardButton.cardNameText.text = card.Name;
+    cardButton.Initialize(card, index, this); // ✅ Передаём `this` как `HandManager`
+}
+
+
+    public void RemoveCard(Card card)
+    {
+        if (cardsInHand.Contains(card))
+        {
+            Debug.Log($"Удаляем карту: {card.Name}");
+            deck.AddToDiscard(card);
+            cardsInHand.Remove(card);
+
+            foreach (Transform child in handPanel)
+            {
+                CardButton cardButton = child.GetComponent<CardButton>();
+                if (cardButton != null && cardButton.Card == card)
+                {
+                    Destroy(child.gameObject);
+                    break;
+                }
+            }
+        }
+    }
+
+    // ✅ **Добавляем этот метод в КОНЕЦ КЛАССА перед `}`**
+    public Card GetRandomCard()
     {
         if (cardsInHand.Count == 0) return null;
         return cardsInHand[Random.Range(0, cardsInHand.Count)];

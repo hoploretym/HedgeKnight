@@ -1,0 +1,132 @@
+=== Scene Hierarchy ===
+Main Camera [True]
+  - Transform
+  - Camera
+  - AudioListener
+  - UniversalAdditionalCameraData
+Global Light 2D [True]
+  - Transform
+  - Light2D
+Player [True]
+  - Transform
+  - CharacterManager
+  - Character
+Enemy [True]
+  - Transform
+  - CharacterManager
+  - Character
+GameManager [True]
+  - Transform
+  - GameManager
+EventSystem [True]
+  - Transform
+  - EventSystem
+  - StandaloneInputModule
+GameCanvas [True]
+  - RectTransform
+  - Canvas
+  - CanvasScaler
+  - GraphicRaycaster
+--PlayerHandManager [True]
+    - RectTransform
+    - HandManager
+    - VerticalLayoutGroup
+    - ContentSizeFitter
+--EnemyHandManager [True]
+    - Transform
+    - EnemyHandManager
+--GameUI [True]
+    - RectTransform
+    - GameUI
+--LogText [True]
+    - RectTransform
+    - CanvasRenderer
+    - TextMeshProUGUI
+    - ContentSizeFitter
+--StartButton [True]
+    - RectTransform
+    - CanvasRenderer
+    - Image
+    - Button
+----Text (TMP) [True]
+      - RectTransform
+      - CanvasRenderer
+      - TextMeshProUGUI
+--EndTurnButton [False]
+    - RectTransform
+    - CanvasRenderer
+    - Image
+    - Button
+----Text (TMP) [True]
+      - RectTransform
+      - CanvasRenderer
+      - TextMeshProUGUI
+--RestartButton [False]
+    - RectTransform
+    - CanvasRenderer
+    - Image
+    - Button
+----Text (TMP) [True]
+      - RectTransform
+      - CanvasRenderer
+      - TextMeshProUGUI
+--DeckManager [True]
+    - Transform
+    - Deck
+--DeckManagerEnemy [True]
+    - Transform
+    - Deck
+--HandPanel [True]
+    - RectTransform
+    - CanvasRenderer
+    - Image
+    - HorizontalLayoutGroup
+--CharacterPanel [True]
+    - RectTransform
+    - CanvasRenderer
+    - Image
+----PlayerBaseSprite [True]
+      - RectTransform
+      - CanvasRenderer
+      - Image
+----EnemyBaseSprite [True]
+      - RectTransform
+      - CanvasRenderer
+      - Image
+----EnemyHeadMask [True]
+      - RectTransform
+      - CanvasRenderer
+      - Image
+----EnemyTorsoMask [True]
+      - RectTransform
+      - CanvasRenderer
+      - Image
+----PlayerTorsoMask [True]
+      - RectTransform
+      - CanvasRenderer
+      - Image
+----PlayerHeadMask [True]
+      - RectTransform
+      - CanvasRenderer
+      - Image
+CardPrefab [True]
+  - RectTransform
+  - CanvasRenderer
+  - Image
+  - Button
+  - CardButton
+  - AspectRatioFitter
+  - LayoutElement
+--CardNameText [True]
+    - RectTransform
+    - CanvasRenderer
+    - TextMeshProUGUI
+    - ContentSizeFitter
+--CardImage [True]
+    - RectTransform
+    - CanvasRenderer
+    - Image
+    - AspectRatioFitter
+SceneHierarchyExporter [True]
+  - Transform
+  - SceneHierarchyExporter

@@ -363,19 +363,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 264199569060280892}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 7868048793629969648}
-        m_TargetAssemblyTypeName: CardButton, Assembly-CSharp
-        m_MethodName: OnCardClicked
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &7868048793629969648
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -389,7 +377,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cardNameText: {fileID: 4585086724273163091}
-  cardImage: {fileID: 0}
+  cardImage: {fileID: 4121753044138860197}
 --- !u!114 &7416181375954836143
 MonoBehaviour:
   m_ObjectHideFlags: 0

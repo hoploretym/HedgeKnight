@@ -7,6 +7,7 @@ public class Character : MonoBehaviour
     public int HeadHits { get; private set; } = 0;
     public int TorsoHits { get; private set; } = 0;
     public bool IsPlayer;
+
     private Dictionary<string, bool> defense = new Dictionary<string, bool>();
 
     void Awake()
@@ -25,14 +26,45 @@ public class Character : MonoBehaviour
         Energy = Mathf.Max(0, Energy - amount);
     }
 
-    public void TakeDamage(string bodyPart)
+    public void TakeDamage(int amount, string bodyPart)
     {
-        if (!defense.ContainsKey(bodyPart) || !defense[bodyPart])
+        if (IsDefended(bodyPart))
         {
-            if (bodyPart == "Head") HeadHits++;
-            if (bodyPart == "Torso") TorsoHits++;
-            FindObjectOfType<GameUI>().UpdateCharacterDamage(this, bodyPart, bodyPart == "Head" ? HeadHits : TorsoHits);
+            Debug.Log($"{name} заблокировал удар в {bodyPart}!");
+            return;
         }
+
+        Debug.Log($"{name} получает {amount} урона в {bodyPart}!");
+
+        if (bodyPart == "Head")
+        {
+            HeadHits++;
+            if (HeadHits >= 2) Die();
+        }
+        else if (bodyPart == "Torso")
+        {
+            TorsoHits++;
+            if (TorsoHits >= 3) Die();
+        }
+
+        // 🔴 **Обновляем цвет маски повреждений**
+        GameManager.Instance.gameUI.UpdateCharacterDamage(this, bodyPart, bodyPart == "Head" ? HeadHits : TorsoHits);
+    }
+
+    public void Die()
+    {
+        Debug.Log($"{name} погиб!");
+
+        if (IsPlayer)
+        {
+            GameManager.Instance.gameUI.LogAction("<b>Игрок проиграл!</b>");
+        }
+        else
+        {
+            GameManager.Instance.gameUI.LogAction("<b>Игрок победил!</b>");
+        }
+
+        GameManager.Instance.EndBattle(this);
     }
 
     public void SetDefense(string bodyPart)
