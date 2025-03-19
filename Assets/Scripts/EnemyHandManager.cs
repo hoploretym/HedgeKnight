@@ -4,7 +4,7 @@ using UnityEngine;
 public class EnemyHandManager : MonoBehaviour
 {
     private Deck deck;
-    private List<Card> cardsInHand = new List<Card>();
+    public List<Card> cardsInHand = new List<Card>();
 
     public void Initialize(Deck deckReference)
     {
@@ -12,27 +12,32 @@ public class EnemyHandManager : MonoBehaviour
         Debug.Log($"EnemyHandManager: deck установлен, карт в колоде: {deck.CardsCount()}");
     }
 
-    public void DrawNewHand()
+public void DrawNewHand()
+{
+    if (deck == null)
     {
-        if (deck == null)
-        {
-            Debug.LogError("Ошибка: deck в EnemyHandManager == null! Проверь, задана ли колода.");
-            return;
-        }
-
-        cardsInHand.Clear();
-
-        for (int i = 0; i < 5; i++)
-        {
-            Card newCard = deck.DrawCard();
-            if (newCard != null)
-            {
-                cardsInHand.Add(newCard);
-            }
-        }
-
-        Debug.Log($"EnemyHandManager: Добрали {cardsInHand.Count} карт.");
+        Debug.LogError("[EnemyHandManager] Ошибка: deck в EnemyHandManager == null!");
+        return;
     }
+
+    // ✅ Если рука НЕ пуста, ничего не делаем
+    if (cardsInHand.Count > 0) return;
+
+    Debug.Log("[EnemyHandManager] Рука пуста, обновляем!");
+
+    cardsInHand.Clear();
+
+    for (int i = 0; i < 5; i++)
+    {
+        Card newCard = deck.DrawCard();
+        if (newCard != null)
+        {
+            cardsInHand.Add(newCard);
+        }
+    }
+
+    Debug.Log($"[EnemyHandManager] Всего карт в руке после обновления: {cardsInHand.Count}");
+}
 
     public Card GetRandomCard()
     {
@@ -49,4 +54,7 @@ public class EnemyHandManager : MonoBehaviour
             cardsInHand.Remove(card);
         }
     }
+
+    // ✅ Публичное свойство для проверки количества карт в руке
+    public int CardsInHandCount => cardsInHand.Count;
 }

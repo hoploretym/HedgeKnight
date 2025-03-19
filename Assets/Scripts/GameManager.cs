@@ -15,7 +15,7 @@ public class GameManager : MonoBehaviour
     
     private Character player;
     private Character enemy;
-    private List<Card> playerSelectedCards = new List<Card>();
+    private Card playerSelectedCard; // Теперь только 1 карта
     private Card enemyChosenCard;
     private bool waitingForChoices = true;
     public bool battleEnded = false;
@@ -38,7 +38,7 @@ public class GameManager : MonoBehaviour
     public void StartBattle()
     {
         Debug.Log("Бой начался!");
-        gameUI.ClearLog(); // Очистка перед началом боя
+        gameUI.ClearLog();
         Deck playerDeck = GameObject.Find("DeckManager")?.GetComponent<Deck>();
         Deck enemyDeck = GameObject.Find("DeckManagerEnemy")?.GetComponent<Deck>();
 
@@ -48,18 +48,9 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        Debug.Log($"Назначаем {playerHand?.gameObject.name ?? "NULL"} колоду: {playerDeck.gameObject.name}");
-        Debug.Log($"Назначаем {enemyHand?.gameObject.name ?? "NULL"} колоду: {enemyDeck.gameObject.name}");
-
-        if (playerHand == null)
+        if (playerHand == null || enemyHand == null)
         {
-            Debug.LogError("Ошибка: playerHand == null! Проверь, добавлен ли PlayerHandManager в сцену и назначен ли в GameManager.");
-            return;
-        }
-
-        if (enemyHand == null)
-        {
-            Debug.LogError("Ошибка: enemyHand == null! Проверь, добавлен ли EnemyHandManager в сцену и назначен ли в GameManager.");
+            Debug.LogError("Ошибка: Не найдены HandManager у игрока или противника!");
             return;
         }
 
@@ -73,84 +64,93 @@ public class GameManager : MonoBehaviour
         enemyHand.DrawNewHand();
     }
 
-    public void PlayerSelectCard(int index)
+public void PlayerSelectCard(int index)
+{
+    if (!waitingForChoices) return;
+
+    // ✅ Исправляем проверку, чтобы индекс не вызывал крэш
+    if (index < 0 || index >= playerHand.cardsInHand.Count)
     {
-        if (!waitingForChoices) return;
-
-        if (index < 0 || index >= playerHand.cardsInHand.Count)
-        {
-            Debug.Log("Некорректный выбор карты!");
-            return;
-        }
-
-        Card selectedCard = playerHand.cardsInHand[index];
-
-        if (playerSelectedCards.Contains(selectedCard))
-        {
-            playerSelectedCards.Remove(selectedCard);
-            Debug.Log($"Карта {selectedCard.Name} убрана из выбранных.");
-        }
-        else if (player.Energy >= selectedCard.EnergyCost)
-        {
-            playerSelectedCards.Add(selectedCard);
-            Debug.Log($"Карта {selectedCard.Name} добавлена в выбранные.");
-        }
-        else
-        {
-            Debug.Log("Недостаточно энергии!");
-        }
-
-        gameUI.UpdateCardSelection(playerSelectedCards);
+        Debug.LogError($"[PlayerSelectCard] Ошибка: Некорректный индекс карты ({index})! Карт в руке: {playerHand.cardsInHand.Count}");
+        return;
     }
 
-    public void FinishTurn()
-{
-    if (playerSelectedCards.Count == 0)
+    Card selectedCard = playerHand.cardsInHand[index];
+
+    if (playerSelectedCard == selectedCard)
     {
-        gameUI.LogAction("<color=red>Выберите хотя бы одну карту перед завершением хода!</color>");
+        playerSelectedCard = null;
+        gameUI.UpdateCardSelection(new List<Card>());
+        Debug.Log($"[GameManager] Снято выделение с карты: {selectedCard.Name}");
+    }
+    else
+    {
+        playerSelectedCard = selectedCard;
+        gameUI.UpdateCardSelection(new List<Card> { playerSelectedCard });
+        Debug.Log($"[GameManager] Выбрана карта: {selectedCard.Name}");
+    }
+}
+
+
+public void FinishTurn()
+{
+    if (playerSelectedCard == null)
+    {
+        gameUI.LogAction("<color=red>Выберите карту перед завершением хода!</color>");
         return;
     }
 
     waitingForChoices = false;
     enemyChosenCard = enemyHand.GetRandomCard();
-    gameUI.ClearLog();
 
     List<string> roundLog = new List<string>();
     roundLog.Add($"<b>Ход {turnNumber}.</b>");
 
-    // 🔥 Игрок разыгрывает карты
-    foreach (var card in playerSelectedCards)
-    {
-        string result = ApplyCardEffects(card, player, enemy, enemyChosenCard);
-        roundLog.Add($"<b>Сыграна карта:</b> {card.Name}");
-        roundLog.Add($"Эффект: {result}");
-        playerHand.RemoveCard(card);
-    }
+    // ✅ Игрок разыгрывает карту
+    string result = ApplyCardEffects(playerSelectedCard, player, enemy, enemyChosenCard);
+    roundLog.Add($"<b>Сыграна карта:</b> {playerSelectedCard.Name}");
+    roundLog.Add($"Эффект: {result}");
+    playerHand.RemoveCard(playerSelectedCard);
 
-    // 🔥 Противник разыгрывает карту
+    // ✅ Противник разыгрывает карту
     if (enemyChosenCard != null)
     {
-        string enemyResult = ApplyCardEffects(enemyChosenCard, enemy, player, playerSelectedCards.Count > 0 ? playerSelectedCards[0] : null);
+        string enemyResult = ApplyCardEffects(enemyChosenCard, enemy, player, playerSelectedCard);
         roundLog.Add($"<b>Противник сыграл карту:</b> {enemyChosenCard.Name}");
         roundLog.Add($"Эффект: {enemyResult}");
         enemyHand.RemoveCard(enemyChosenCard);
     }
 
-    playerSelectedCards.Clear();
+    playerSelectedCard = null; 
 
     if (CheckBattleEnd()) return;
 
-    // 🔄 Переход к следующему ходу
-    player.ResetEnergy();
-    enemy.ResetEnergy();
-    playerHand.DrawNewHand();
-    enemyHand.DrawNewHand();
-    gameUI.RefreshHandUI();
+    // ✅ Запоминаем количество карт перед обновлением
+    int playerHandBefore = playerHand.cardsInHand.Count;
+    int enemyHandBefore = enemyHand.CardsInHandCount;
 
+    bool playerHandRefilled = playerHandBefore == 0;
+    bool enemyHandRefilled = enemyHandBefore == 0;
+
+if (playerHandRefilled)
+{
+    playerHand.DrawNewHand();
+    roundLog.Add("<color=yellow><b>Обновление руки!</b></color>"); // ✅ Лог только при обновлении
+}
+
+if (enemyHandRefilled)
+{
+    enemyHand.DrawNewHand();
+}
+
+    gameUI.RefreshHandUI();
     gameUI.LogRoundResults(roundLog);
-    turnNumber++; // Увеличиваем счетчик хода
+
+    turnNumber++; 
     waitingForChoices = true;
 }
+
+
 
     private string ApplyCardEffects(Card card, Character attacker, Character target, Card opponentCard)
     {
@@ -174,33 +174,33 @@ public class GameManager : MonoBehaviour
         }
     }
 
- public bool CheckBattleEnd()
-{
-    if (battleEnded) return true; // Если бой уже завершился, просто выходим
-
-    if (player.HeadHits >= 2 || player.TorsoHits >= 3)
+    public bool CheckBattleEnd()
     {
-        EndBattle(player);
-        return true;
+        if (battleEnded) return true; 
+
+        if (player.HeadHits >= 2 || player.TorsoHits >= 3)
+        {
+            EndBattle(player);
+            return true;
+        }
+        if (enemy.HeadHits >= 2 || enemy.TorsoHits >= 3)
+        {
+            EndBattle(enemy);
+            return true;
+        }
+
+        return false;
     }
-    if (enemy.HeadHits >= 2 || enemy.TorsoHits >= 3)
+
+    public void EndBattle(Character loser)
     {
-        EndBattle(enemy);
-        return true;
+        if (battleEnded) return; 
+
+        battleEnded = true;
+        string result = loser.IsPlayer ? "<b><color=red>Игрок проиграл!</color></b>" : "<b><color=green>Игрок победил!</color></b>";
+
+        gameUI.ClearLog();
+        gameUI.LogAction(result);
+        Debug.Log(result);
     }
-
-    return false;
-}
-
-public void EndBattle(Character loser)
-{
-    if (battleEnded) return; // Если бой уже завершен, просто выходим
-
-    battleEnded = true; // Фиксируем, что бой завершен
-    string result = loser.IsPlayer ? "<b><color=red>Игрок проиграл!</color></b>" : "<b><color=green>Игрок победил!</color></b>";
-
-    gameUI.ClearLog(); // Очищаем предыдущие сообщения, чтобы оставить только финальный результат
-    gameUI.LogAction(result);
-    Debug.Log(result);
-}
 }

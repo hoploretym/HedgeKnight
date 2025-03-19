@@ -12,6 +12,7 @@ public class GameUI : MonoBehaviour
     public Button endTurnButton;
     public Button restartButton;
     public TextMeshProUGUI logText;
+    public ScrollRect logScroll; // ✅ Добавлен ScrollRect для логов
 
     // 🎭 Базовые спрайты и повреждения
     public Image playerBaseSprite;
@@ -24,17 +25,17 @@ public class GameUI : MonoBehaviour
     public Sprite headDamage1, headDamage2;
     public Sprite torsoDamage1, torsoDamage2, torsoDamage3;
 
+    private List<string> logHistory = new List<string>(); 
+    private const int maxLogs = 7; // ✅ Ограничиваем количество логов
+
     void Start()
     {
         gameManager = FindObjectOfType<GameManager>();
         startButton.onClick.AddListener(StartGame);
         endTurnButton.onClick.AddListener(EndTurn);
-        endTurnButton.gameObject.SetActive(false);
         restartButton.onClick.AddListener(RestartBattle);
-        restartButton.gameObject.SetActive(false); // Скрываем до начала боя
+        restartButton.gameObject.SetActive(false);
 
-
-        // Скрываем урон при старте
         ResetDamageMasks();
     }
 
@@ -47,7 +48,6 @@ public class GameUI : MonoBehaviour
         endTurnButton.gameObject.SetActive(true);
         restartButton.gameObject.SetActive(true);
 
-        // Сбрасываем урон перед началом
         ResetDamageMasks();
     }
 
@@ -58,15 +58,45 @@ public class GameUI : MonoBehaviour
 
     public void RestartBattle()
     {
-    GameManager.Instance.battleEnded = false;
-    SceneManager.LoadScene(SceneManager.GetActiveScene().name); // Перезагружаем сцену
+        GameManager.Instance.battleEnded = false;
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
-    // 🩸 ОБНОВЛЕНИЕ ПОВРЕЖДЕНИЙ
-public void UpdateCharacterDamage(Character character, string bodyPart, int hits)
+    public void LogRoundResults(List<string> roundLog)
+    {
+        foreach (string logEntry in roundLog)
+        {
+            LogAction(logEntry);
+        }
+    }
+
+    public void LogAction(string message)
+    {
+        if (logText != null)
+        {
+            logHistory.Add(message);
+
+            // ✅ Ограничиваем количество логов
+            if (logHistory.Count > maxLogs)
+            {
+                logHistory.RemoveAt(0);
+            }
+
+            logText.text = string.Join("\n", logHistory);
+
+            // ✅ Прокручиваем вниз, чтобы видеть новые логи
+            if (logScroll != null)
+            {
+                Canvas.ForceUpdateCanvases();
+                logScroll.verticalNormalizedPosition = 0f;
+            }
+        }
+    }
+
+    public void UpdateCharacterDamage(Character character, string bodyPart, int hits)
 {
     Image targetMask = null;
-    Color damageColor = new Color(1, 1, 1, 0); // По умолчанию прозрачный
+    Color damageColor = new Color(1, 1, 1, 0); // По умолчанию прозрачный (нет урона)
 
     if (character.IsPlayer)
     {
@@ -79,7 +109,7 @@ public void UpdateCharacterDamage(Character character, string bodyPart, int hits
         else if (bodyPart == "Torso")
         {
             targetMask = playerTorsoMask;
-            if (hits == 1) damageColor = new Color(240f / 255f, 128f / 255f, 128f / 255f, 1f); // #F08080
+            if (hits == 1) damageColor = new Color(240f / 255f, 128f / 255f, 128f / 255f, 1f);
             else if (hits == 2) damageColor = new Color(178f / 255f, 34f / 255f, 34f / 255f, 1f); // #B22222
             else if (hits >= 3) damageColor = new Color(139f / 255f, 0f, 0f, 1f); // #8B0000
         }
@@ -89,15 +119,15 @@ public void UpdateCharacterDamage(Character character, string bodyPart, int hits
         if (bodyPart == "Head")
         {
             targetMask = enemyHeadMask;
-            if (hits == 1) damageColor = new Color(240f / 255f, 128f / 255f, 128f / 255f, 1f); // #F08080
-            else if (hits >= 2) damageColor = new Color(139f / 255f, 0f, 0f, 1f); // #8B0000
+            if (hits == 1) damageColor = new Color(240f / 255f, 128f / 255f, 128f / 255f, 1f);
+            else if (hits >= 2) damageColor = new Color(139f / 255f, 0f, 0f, 1f);
         }
         else if (bodyPart == "Torso")
         {
             targetMask = enemyTorsoMask;
-            if (hits == 1) damageColor = new Color(240f / 255f, 128f / 255f, 128f / 255f, 1f); // #F08080
-            else if (hits == 2) damageColor = new Color(178f / 255f, 34f / 255f, 34f / 255f, 1f); // #B22222
-            else if (hits >= 3) damageColor = new Color(139f / 255f, 0f, 0f, 1f); // #8B0000
+            if (hits == 1) damageColor = new Color(240f / 255f, 128f / 255f, 128f / 255f, 1f);
+            else if (hits == 2) damageColor = new Color(178f / 255f, 34f / 255f, 34f / 255f, 1f);
+            else if (hits >= 3) damageColor = new Color(139f / 255f, 0f, 0f, 1f);
         }
     }
 
@@ -106,24 +136,14 @@ public void UpdateCharacterDamage(Character character, string bodyPart, int hits
     targetMask.color = damageColor;
 }
 
-public void LogRoundResults(List<string> roundLog)
-{
-    foreach (string logEntry in roundLog)
+    private void ResetDamageMasks()
     {
-        LogAction(logEntry);
+        playerHeadMask.color = new Color(1, 1, 1, 0);
+        playerTorsoMask.color = new Color(1, 1, 1, 0);
+        enemyHeadMask.color = new Color(1, 1, 1, 0);
+        enemyTorsoMask.color = new Color(1, 1, 1, 0);
     }
-}
 
-    // 🔄 СБРОС ПОВРЕЖДЕНИЙ
-private void ResetDamageMasks()
-{
-    playerHeadMask.color = new Color(1, 1, 1, 0); // Полностью прозрачный
-    playerTorsoMask.color = new Color(1, 1, 1, 0);
-    enemyHeadMask.color = new Color(1, 1, 1, 0);
-    enemyTorsoMask.color = new Color(1, 1, 1, 0);
-}
-
-    // 🔶 **ВОЗВРАЩАЕМ UpdateCardSelection()**
     public void UpdateCardSelection(List<Card> selectedCards)
     {
         foreach (Transform child in gameManager.playerHand.handPanel)
@@ -136,10 +156,9 @@ private void ResetDamageMasks()
         }
     }
 
-    // 🔷 **ВОЗВРАЩАЕМ RefreshHandUI()**
     public void RefreshHandUI()
     {
-        LogAction("<color=#00FF00>Обновление руки!</color>");
+        Debug.Log("[GameUI] Обновление UI руки!");
     }
 
     public void ShowPlayedCards(List<Card> playerCards, Card enemyCard)
@@ -154,20 +173,12 @@ private void ResetDamageMasks()
                             $"<b>Оппонент сыграл:</b> {enemyCard.Name}\n" +
                             "<size=18>---------------------------</size>";
 
-        ClearLog();
         LogAction(logMessage);
-    }
-
-    public void LogAction(string message)
-    {
-        if (logText != null)
-        {
-            logText.text += message + "\n";
-        }
     }
 
     public void ClearLog()
     {
+        logHistory.Clear();
         if (logText != null)
         {
             logText.text = "";
