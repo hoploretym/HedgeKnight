@@ -58,6 +58,7 @@ public class GameUI : MonoBehaviour
 
     public void RestartBattle()
     {
+    GameManager.Instance.battleEnded = false;
     SceneManager.LoadScene(SceneManager.GetActiveScene().name); // Перезагружаем сцену
     }
 
@@ -105,7 +106,13 @@ public void UpdateCharacterDamage(Character character, string bodyPart, int hits
     targetMask.color = damageColor;
 }
 
-
+public void LogRoundResults(List<string> roundLog)
+{
+    foreach (string logEntry in roundLog)
+    {
+        LogAction(logEntry);
+    }
+}
 
     // 🔄 СБРОС ПОВРЕЖДЕНИЙ
 private void ResetDamageMasks()

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -17,6 +18,8 @@ public class GameManager : MonoBehaviour
     private List<Card> playerSelectedCards = new List<Card>();
     private Card enemyChosenCard;
     private bool waitingForChoices = true;
+    public bool battleEnded = false;
+    private int turnNumber = 1;
 
     void Awake()
     {
@@ -72,8 +75,6 @@ public class GameManager : MonoBehaviour
 
     public void PlayerSelectCard(int index)
     {
-        Debug.Log($"[DEBUG] Начало PlayerSelectCard(). Выбрано карт: {playerSelectedCards.Count}");
-
         if (!waitingForChoices) return;
 
         if (index < 0 || index >= playerHand.cardsInHand.Count)
@@ -83,8 +84,6 @@ public class GameManager : MonoBehaviour
         }
 
         Card selectedCard = playerHand.cardsInHand[index];
-
-        Debug.Log($"[DEBUG] Карта {selectedCard.Name} сейчас {(playerSelectedCards.Contains(selectedCard) ? "уже выбрана" : "не выбрана")}.");
 
         if (playerSelectedCards.Contains(selectedCard))
         {
@@ -101,93 +100,107 @@ public class GameManager : MonoBehaviour
             Debug.Log("Недостаточно энергии!");
         }
 
-        Debug.Log($"[DEBUG] После выбора: выбрано карт {playerSelectedCards.Count}");
-
         gameUI.UpdateCardSelection(playerSelectedCards);
     }
 
     public void FinishTurn()
 {
-    Debug.Log($"Карт в руке: {playerHand.cardsInHand.Count}, выбранных карт: {playerSelectedCards.Count}");
-
     if (playerSelectedCards.Count == 0)
     {
-        gameUI.LogAction("Выберите хотя бы одну карту перед завершением хода!");
+        gameUI.LogAction("<color=red>Выберите хотя бы одну карту перед завершением хода!</color>");
         return;
     }
 
     waitingForChoices = false;
-
-    // 🏹 Враг выбирает карту
     enemyChosenCard = enemyHand.GetRandomCard();
     gameUI.ClearLog();
-    // 🔥 Формируем лог боя с нормальными переносами
-    gameUI.LogAction($"Игрок сыграл: <b>{playerSelectedCards[0].Name}</b>");
-    gameUI.LogAction($"Оппонент сыграл: <b>{enemyChosenCard.Name}</b>");
-    gameUI.LogAction("---------------------------");
 
-    // ⚔️ Применяем карты игрока
+    List<string> roundLog = new List<string>();
+    roundLog.Add($"<b>Ход {turnNumber}.</b>");
+
+    // 🔥 Игрок разыгрывает карты
     foreach (var card in playerSelectedCards)
     {
-        Debug.Log($"Применяем эффект карты {card.Name}.");
-        ApplyCardEffects(card, player, enemy, enemyChosenCard);
+        string result = ApplyCardEffects(card, player, enemy, enemyChosenCard);
+        roundLog.Add($"<b>Сыграна карта:</b> {card.Name}");
+        roundLog.Add($"Эффект: {result}");
         playerHand.RemoveCard(card);
     }
 
-    // ⚔️ Применяем карту врага
+    // 🔥 Противник разыгрывает карту
     if (enemyChosenCard != null)
     {
-        ApplyCardEffects(enemyChosenCard, enemy, player, playerSelectedCards.Count > 0 ? playerSelectedCards[0] : null);
+        string enemyResult = ApplyCardEffects(enemyChosenCard, enemy, player, playerSelectedCards.Count > 0 ? playerSelectedCards[0] : null);
+        roundLog.Add($"<b>Противник сыграл карту:</b> {enemyChosenCard.Name}");
+        roundLog.Add($"Эффект: {enemyResult}");
         enemyHand.RemoveCard(enemyChosenCard);
     }
 
-    // ❌ Очищаем выбор
     playerSelectedCards.Clear();
 
-    // 🎯 Проверяем победу/поражение
     if (CheckBattleEnd()) return;
 
-    // 🔄 Начинаем новый раунд
+    // 🔄 Переход к следующему ходу
     player.ResetEnergy();
     enemy.ResetEnergy();
-
     playerHand.DrawNewHand();
     enemyHand.DrawNewHand();
     gameUI.RefreshHandUI();
 
+    gameUI.LogRoundResults(roundLog);
+    turnNumber++; // Увеличиваем счетчик хода
     waitingForChoices = true;
 }
 
-
-
-    void ApplyCardEffects(Card card, Character attacker, Character target, Card opponentCard)
+    private string ApplyCardEffects(Card card, Character attacker, Character target, Card opponentCard)
     {
-        if (card == null) return;
-        Debug.Log($"{attacker.name} играет {card.Name} против {target.name}");
-        card.PlayCard(attacker, target, opponentCard);
+        if (card == null) return "Ошибка: карта отсутствует!";
+
+        if (card.Type == CardType.Defense)
+        {
+            target.SetDefense(card.TargetBodyPart);
+            return $"<color=blue>{target.name} активировал защиту на {card.TargetBodyPart}.</color>";
+        }
+        else
+        {
+            if (opponentCard != null && opponentCard.Type == CardType.Defense &&
+                System.Array.Exists(opponentCard.Counters, c => c == card.Name))
+            {
+                return $"<color=blue>{target.name} заблокировал атаку {card.Name} с помощью {opponentCard.Name}!</color>";
+            }
+
+            target.TakeDamage(card.Damage, card.TargetBodyPart);
+            return $"<color=red>{target.name} получил {card.Damage} урона в {card.TargetBodyPart}!</color>";
+        }
     }
 
-    public bool CheckBattleEnd()
-    {
-        if (player.HeadHits >= 2 || player.TorsoHits >= 3)
-        {
-            gameUI.LogAction("Игрок проиграл!");
-            return true;
-        }
-        if (enemy.HeadHits >= 2 || enemy.TorsoHits >= 3)
-        {
-            gameUI.LogAction("Игрок победил!");
-            return true;
-        }
-        return false;
-    }
-
-    public void EndBattle(Character loser)
+ public bool CheckBattleEnd()
 {
-    string result = loser.IsPlayer ? "Игрок проиграл!" : "Игрок победил!";
+    if (battleEnded) return true; // Если бой уже завершился, просто выходим
+
+    if (player.HeadHits >= 2 || player.TorsoHits >= 3)
+    {
+        EndBattle(player);
+        return true;
+    }
+    if (enemy.HeadHits >= 2 || enemy.TorsoHits >= 3)
+    {
+        EndBattle(enemy);
+        return true;
+    }
+
+    return false;
+}
+
+public void EndBattle(Character loser)
+{
+    if (battleEnded) return; // Если бой уже завершен, просто выходим
+
+    battleEnded = true; // Фиксируем, что бой завершен
+    string result = loser.IsPlayer ? "<b><color=red>Игрок проиграл!</color></b>" : "<b><color=green>Игрок победил!</color></b>";
+
+    gameUI.ClearLog(); // Очищаем предыдущие сообщения, чтобы оставить только финальный результат
     gameUI.LogAction(result);
     Debug.Log(result);
-
-    // TODO: Здесь можно добавить сцену окончания боя или перезапуск
 }
 }
