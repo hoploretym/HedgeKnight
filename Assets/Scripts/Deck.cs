@@ -38,7 +38,6 @@ public class Deck : MonoBehaviour
                 return null;
             }
 
-            // Перемешиваем сброс в новую колоду
             cards.AddRange(discardPile);
             discardPile.Clear();
             Shuffle();
@@ -66,24 +65,61 @@ public class Deck : MonoBehaviour
         return cards.Count;
     }
 
-public void FillDeck()
-{
-    AddCard(new Card("Overhead Strike", 1, "Head", 1, CardType.Attack));
-    AddCard(new Card("Thrust", 1, "Torso", 1, CardType.Attack));
-    AddCard(new Card("Shield Slam", 1, "Torso", 1, CardType.Attack));
-    AddCard(new Card("Pommel Strike", 1, "Head", 1, CardType.Attack));
-    AddCard(new Card("Parry & Riposte", 1, "Arms", 1, CardType.Attack));
-    AddCard(new Card("Low Cut", 1, "Legs", 1, CardType.Attack));
-    AddCard(new Card("Half-Swording", 1, "Torso", 1, CardType.Attack));
-    AddCard(new Card("Hook & Pull", 1, "Arms", 1, CardType.Attack));
-    AddCard(new Card("Cross Guard Punch", 1, "Head", 1, CardType.Attack));
-    AddCard(new Card("Mordhau Strike", 1, "Head", 1, CardType.Attack));
+    public void FillDeck()
+    {
+        AddCard(new Card("atk_01", "Overhead Strike", CardType.Attack, "Head", 1, 1));
+        AddCard(new Card("atk_02", "Thrust", CardType.Attack, "Torso", 1, 1));
+        AddCard(new Card("atk_03", "Low Cut", CardType.Attack, "Legs", 1, 1));
+        AddCard(new Card("atk_04", "Mordhau Strike", CardType.Attack, "Arms", 1, 1));
 
-    AddCard(new Card("High Guard", 1, "Arms", 0, CardType.Defense, new string[] { "Overhead Strike", "Pommel Strike", "Cross Guard Punch" }));
-    AddCard(new Card("Brace Stance", 1, "Torso", 0, CardType.Defense, new string[] { "Thrust", "Shield Slam", "Half-Swording" }));
-    AddCard(new Card("Guarded Step Back", 1, "Legs", 0, CardType.Defense, new string[] { "Low Cut", "Hook & Pull", "Mordhau Strike" }));
-    AddCard(new Card("Strong Grip", 1, "Arms", 0, CardType.Defense, new string[] { "Parry & Riposte", "Thrust", "Hook & Pull" }));
-    AddCard(new Card("Head Tilt & Angle", 1, "Head", 0, CardType.Defense, new string[] { "Pommel Strike", "Cross Guard Punch", "Mordhau Strike" }));
-}
+        AddCard(new Card("spc_01", "Pommel Strike", CardType.Special, "Head", 1, 1));
+        AddCard(new Card("spc_02", "Shield Slam", CardType.Special, "Torso", 1, 1));
+        AddCard(new Card("spc_03", "Parry & Riposte", CardType.Special, "Arms", 1, 1));
+        AddCard(new Card("spc_04", "Hook & Pull", CardType.Special, "Legs", 1, 1));
 
+        AddCard(
+            new Card(
+                "def_01",
+                "High Guard",
+                CardType.Defense,
+                "Head",
+                -1,
+                0,
+                new string[] { "Overhead Strike", "Pommel Strike", "Cross Guard Punch" }
+            )
+        );
+        AddCard(
+            new Card(
+                "def_02",
+                "Brace Stance",
+                CardType.Defense,
+                "Torso",
+                -1,
+                0,
+                new string[] { "Thrust", "Shield Slam", "Half-Swording" }
+            )
+        );
+        AddCard(
+            new Card(
+                "def_03",
+                "Guarded Step Back",
+                CardType.Defense,
+                "Legs",
+                -1,
+                0,
+                new string[] { "Low Cut", "Hook & Pull", "Mordhau Strike" }
+            )
+        );
+        AddCard(
+            new Card(
+                "def_04",
+                "Strong Grip",
+                CardType.Defense,
+                "Arms",
+                -1,
+                0,
+                new string[] { "Parry & Riposte", "Thrust", "Hook & Pull" }
+            )
+        );
+    }
 }

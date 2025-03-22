@@ -1,6 +1,6 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 
 public class CardButton : MonoBehaviour
 {
@@ -35,7 +35,8 @@ public class CardButton : MonoBehaviour
 
     private void UpdateCardAppearance()
     {
-        if (cardImage == null) return;
+        if (cardImage == null)
+            return;
 
         if (Card.Type == CardType.Attack)
         {
@@ -44,6 +45,10 @@ public class CardButton : MonoBehaviour
         else if (Card.Type == CardType.Defense)
         {
             cardImage.color = new Color32(0, 0, 255, 255);
+        }
+        else if (Card.Type == CardType.Special)
+        {
+            cardImage.color = new Color32(255, 165, 0, 255);
         }
     }
 
