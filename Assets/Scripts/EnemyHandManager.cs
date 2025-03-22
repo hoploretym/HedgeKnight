@@ -12,36 +12,38 @@ public class EnemyHandManager : MonoBehaviour
         Debug.Log($"EnemyHandManager: deck установлен, карт в колоде: {deck.CardsCount()}");
     }
 
-public void DrawNewHand()
-{
-    if (deck == null)
+    public void DrawNewHand()
     {
-        Debug.LogError("[EnemyHandManager] Ошибка: deck в EnemyHandManager == null!");
-        return;
-    }
-
-    // ✅ Если рука НЕ пуста, ничего не делаем
-    if (cardsInHand.Count > 0) return;
-
-    Debug.Log("[EnemyHandManager] Рука пуста, обновляем!");
-
-    cardsInHand.Clear();
-
-    for (int i = 0; i < 5; i++)
-    {
-        Card newCard = deck.DrawCard();
-        if (newCard != null)
+        if (deck == null)
         {
-            cardsInHand.Add(newCard);
+            Debug.LogError("[EnemyHandManager] Ошибка: deck в EnemyHandManager == null!");
+            return;
         }
-    }
 
-    Debug.Log($"[EnemyHandManager] Всего карт в руке после обновления: {cardsInHand.Count}");
-}
+        // ✅ Если рука НЕ пуста, ничего не делаем
+        if (cardsInHand.Count > 0)
+            return;
+
+        Debug.Log("[EnemyHandManager] Рука пуста, обновляем!");
+
+        cardsInHand.Clear();
+
+        for (int i = 0; i < 5; i++)
+        {
+            Card newCard = deck.DrawCard();
+            if (newCard != null)
+            {
+                cardsInHand.Add(newCard);
+            }
+        }
+
+        Debug.Log($"[EnemyHandManager] Всего карт в руке после обновления: {cardsInHand.Count}");
+    }
 
     public Card GetRandomCard()
     {
-        if (cardsInHand.Count == 0) return null;
+        if (cardsInHand.Count == 0)
+            return null;
         return cardsInHand[Random.Range(0, cardsInHand.Count)];
     }
 
@@ -53,6 +55,16 @@ public void DrawNewHand()
             deck.AddToDiscard(card);
             cardsInHand.Remove(card);
         }
+    }
+
+    public Card DrawOneCard()
+    {
+        Card newCard = deck.DrawCard();
+        if (newCard != null)
+        {
+            cardsInHand.Add(newCard);
+        }
+        return newCard;
     }
 
     // ✅ Публичное свойство для проверки количества карт в руке

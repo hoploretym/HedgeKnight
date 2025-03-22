@@ -16,34 +16,37 @@ public class HandManager : MonoBehaviour
         Debug.Log($"HandManager: deck установлен, карт в колоде: {deck.CardsCount()}");
     }
 
-public void DrawNewHand()
-{
-    if (deck == null)
+    public void DrawNewHand()
     {
-        Debug.LogError("[HandManager] Ошибка: deck в HandManager == null! Проверь, задана ли колода в инспекторе.");
-        return;
-    }
-
-    // ✅ Если в руке ещё есть карты, НЕ обновляем
-    if (cardsInHand.Count > 0) return;
-
-    Debug.Log("[HandManager] Рука пуста, обновляем!");
-
-    ClearHand();
-    cardsInHand.Clear();
-
-    for (int i = 0; i < 5; i++)
-    {
-        Card newCard = deck.DrawCard();
-        if (newCard != null)
+        if (deck == null)
         {
-            cardsInHand.Add(newCard);
-            CreateCardUI(newCard);
+            Debug.LogError(
+                "[HandManager] Ошибка: deck в HandManager == null! Проверь, задана ли колода в инспекторе."
+            );
+            return;
         }
-    }
 
-    Debug.Log($"[HandManager] Всего карт в руке после обновления: {cardsInHand.Count}");
-}
+        // ✅ Если в руке ещё есть карты, НЕ обновляем
+        if (cardsInHand.Count > 0)
+            return;
+
+        Debug.Log("[HandManager] Рука пуста, обновляем!");
+
+        ClearHand();
+        cardsInHand.Clear();
+
+        for (int i = 0; i < 5; i++)
+        {
+            Card newCard = deck.DrawCard();
+            if (newCard != null)
+            {
+                cardsInHand.Add(newCard);
+                CreateCardUI(newCard);
+            }
+        }
+
+        Debug.Log($"[HandManager] Всего карт в руке после обновления: {cardsInHand.Count}");
+    }
 
     private void ClearHand()
     {
@@ -88,32 +91,43 @@ public void DrawNewHand()
         cardButton.Initialize(card, this); // ✅ Передаем только 2 аргумента
     }
 
-public void RemoveCard(Card card)
-{
-    if (cardsInHand.Contains(card))
+    public void RemoveCard(Card card)
     {
-        Debug.Log($"Удаляем карту: {card.Name}");
-        deck.AddToDiscard(card);
-        cardsInHand.Remove(card);
-
-        foreach (Transform child in handPanel)
+        if (cardsInHand.Contains(card))
         {
-            CardButton cardButton = child.GetComponent<CardButton>();
-            if (cardButton != null && cardButton.Card == card)
+            Debug.Log($"Удаляем карту: {card.Name}");
+            deck.AddToDiscard(card);
+            cardsInHand.Remove(card);
+
+            foreach (Transform child in handPanel)
             {
-                Destroy(child.gameObject);
-                break;
+                CardButton cardButton = child.GetComponent<CardButton>();
+                if (cardButton != null && cardButton.Card == card)
+                {
+                    Destroy(child.gameObject);
+                    break;
+                }
             }
+
+            // ✅ НЕ вызываем DrawNewHand() после удаления карты!
         }
-
-        // ✅ НЕ вызываем DrawNewHand() после удаления карты!
     }
-}
-
 
     public Card GetRandomCard()
     {
-        if (cardsInHand.Count == 0) return null;
+        if (cardsInHand.Count == 0)
+            return null;
         return cardsInHand[Random.Range(0, cardsInHand.Count)];
+    }
+
+    public Card DrawOneCard()
+    {
+        Card newCard = deck.DrawCard();
+        if (newCard != null)
+        {
+            cardsInHand.Add(newCard);
+            CreateCardUI(newCard);
+        }
+        return newCard;
     }
 }
