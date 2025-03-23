@@ -168,9 +168,8 @@ public class GameUI : MonoBehaviour
             CardButton cardButton = child.GetComponent<CardButton>();
             if (cardButton != null && cardButton.Card != null)
             {
-                child.GetComponent<Image>().color = selectedCards.Contains(cardButton.Card)
-                    ? Color.yellow
-                    : Color.white;
+                bool isSelected = selectedCards.Contains(cardButton.Card);
+                cardButton.SetOutline(isSelected);
             }
         }
     }

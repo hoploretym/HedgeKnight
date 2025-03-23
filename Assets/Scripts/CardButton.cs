@@ -7,8 +7,13 @@ public class CardButton : MonoBehaviour
     private HandManager handManager;
     public TextMeshProUGUI cardNameText;
     public TextMeshProUGUI energyCostText;
-    public Image cardImage;
+    public Image CardImage;
+    public Outline cardOutline; // ← ВОТ ЗДЕСЬ!
     private Button button;
+
+    public TextMeshProUGUI targetBodyPartText;
+
+    private Color originalColor;
     public Card Card { get; private set; }
 
     public void Initialize(Card card, HandManager hand)
@@ -27,9 +32,7 @@ public class CardButton : MonoBehaviour
         button.onClick.AddListener(OnCardClicked);
 
         if (cardNameText != null)
-        {
             cardNameText.text = card.Name;
-        }
 
         if (energyCostText != null)
         {
@@ -37,26 +40,39 @@ public class CardButton : MonoBehaviour
             energyCostText.text = $"{prefix}{Mathf.Abs(Card.EnergyCost)}";
         }
 
+        if (targetBodyPartText != null)
+            targetBodyPartText.text = card.TargetBodyPart.ToString();
+
         UpdateCardAppearance();
+
+        if (cardOutline != null)
+            cardOutline.enabled = false;
+    }
+
+    public void SetOutline(bool enabled)
+    {
+        if (cardOutline != null)
+        {
+            cardOutline.enabled = enabled;
+            Debug.Log($"Outline {(enabled ? "включён" : "выключен")} на карте: {Card.Name}");
+        }
+        else
+            Debug.LogError("cardOutline не назначен!");
     }
 
     private void UpdateCardAppearance()
     {
-        if (cardImage == null)
+        if (CardImage == null)
             return;
 
         if (Card.Type == CardType.Attack)
-        {
-            cardImage.color = new Color32(255, 0, 0, 255);
-        }
+            originalColor = new Color32(255, 0, 0, 255);
         else if (Card.Type == CardType.Defense)
-        {
-            cardImage.color = new Color32(0, 0, 255, 255);
-        }
+            originalColor = new Color32(0, 0, 255, 255);
         else if (Card.Type == CardType.Special)
-        {
-            cardImage.color = new Color32(255, 165, 0, 255);
-        }
+            originalColor = new Color32(255, 165, 0, 255);
+
+        CardImage.color = originalColor;
     }
 
     public void OnCardClicked()
@@ -77,7 +93,6 @@ public class CardButton : MonoBehaviour
 
         Character player = GameManager.Instance.playerController.GetCharacter();
 
-        // 🧠 Проверка энергии
         if (Card.Type != CardType.Defense && player.Energy < Card.EnergyCost)
         {
             GameManager.Instance.gameUI.ShowFloatingMessage("Недостаточно энергии!");

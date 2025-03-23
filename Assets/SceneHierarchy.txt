@@ -117,28 +117,39 @@ GameCanvas [True]
     - RectTransform
     - CanvasRenderer
     - TextMeshProUGUI
-CardPrefab [True]
-  - RectTransform
-  - CanvasRenderer
-  - Image
-  - Button
-  - CardButton
-  - AspectRatioFitter
-  - LayoutElement
---CardNameText [True]
+--CardPrefab [True]
     - RectTransform
     - CanvasRenderer
-    - TextMeshProUGUI
-    - ContentSizeFitter
---CardImage [True]
-    - RectTransform
-    - CanvasRenderer
-    - Image
+    - Button
+    - CardButton
     - AspectRatioFitter
---EnergyCostText [True]
-    - RectTransform
-    - CanvasRenderer
-    - TextMeshProUGUI
+    - LayoutElement
+----CardOutline [True]
+      - RectTransform
+      - CanvasRenderer
+      - Image
+      - Outline
+----CardImage [True]
+      - RectTransform
+      - CanvasRenderer
+      - Image
+----CardNameText [True]
+      - RectTransform
+      - CanvasRenderer
+      - TextMeshProUGUI
+      - ContentSizeFitter
+----EnergyCostCircle [True]
+      - RectTransform
+      - CanvasRenderer
+      - Image
+------EnergyCostText [True]
+        - RectTransform
+        - CanvasRenderer
+        - TextMeshProUGUI
+----TargetBodyPartText [True]
+      - RectTransform
+      - CanvasRenderer
+      - TextMeshProUGUI
 SceneHierarchyExporter [True]
   - Transform
   - SceneHierarchyExporter
