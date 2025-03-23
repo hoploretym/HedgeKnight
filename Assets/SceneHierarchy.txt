@@ -52,7 +52,7 @@ GameCanvas [True]
       - RectTransform
       - CanvasRenderer
       - TextMeshProUGUI
---EndTurnButton [False]
+--EndTurnButton [True]
     - RectTransform
     - CanvasRenderer
     - Image
@@ -109,6 +109,14 @@ GameCanvas [True]
       - RectTransform
       - CanvasRenderer
       - Image
+--PlayerEnergyText [True]
+    - RectTransform
+    - CanvasRenderer
+    - TextMeshProUGUI
+--EnemyEnergyText [True]
+    - RectTransform
+    - CanvasRenderer
+    - TextMeshProUGUI
 CardPrefab [True]
   - RectTransform
   - CanvasRenderer
@@ -127,6 +135,16 @@ CardPrefab [True]
     - CanvasRenderer
     - Image
     - AspectRatioFitter
+--EnergyCostText [True]
+    - RectTransform
+    - CanvasRenderer
+    - TextMeshProUGUI
 SceneHierarchyExporter [True]
   - Transform
   - SceneHierarchyExporter
+PlayerEnergyIcon [True]
+  - Transform
+  - SpriteRenderer
+EnemyrEnergyIcon [True]
+  - Transform
+  - SpriteRenderer

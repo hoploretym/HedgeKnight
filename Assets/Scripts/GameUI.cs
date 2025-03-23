@@ -1,9 +1,9 @@
-using UnityEngine;
-using UnityEngine.UI;
-using TMPro;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
+using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class GameUI : MonoBehaviour
 {
@@ -12,9 +12,8 @@ public class GameUI : MonoBehaviour
     public Button endTurnButton;
     public Button restartButton;
     public TextMeshProUGUI logText;
-    public ScrollRect logScroll; // ✅ Добавлен ScrollRect для логов
+    public ScrollRect logScroll;
 
-    // 🎭 Базовые спрайты и повреждения
     public Image playerBaseSprite;
     public Image playerHeadMask;
     public Image playerTorsoMask;
@@ -22,11 +21,20 @@ public class GameUI : MonoBehaviour
     public Image enemyHeadMask;
     public Image enemyTorsoMask;
 
-    public Sprite headDamage1, headDamage2;
-    public Sprite torsoDamage1, torsoDamage2, torsoDamage3;
+    public TextMeshProUGUI playerEnergyText;
+    public TextMeshProUGUI enemyEnergyText;
 
-    private List<string> logHistory = new List<string>(); 
-    private const int maxLogs = 7; // ✅ Ограничиваем количество логов
+    public GameObject floatingMessagePrefab; // Префаб текста
+    public Transform floatingMessageParent; // Панель или Canvas
+
+    public Sprite headDamage1,
+        headDamage2;
+    public Sprite torsoDamage1,
+        torsoDamage2,
+        torsoDamage3;
+
+    private List<string> logHistory = new List<string>();
+    private const int maxLogs = 7;
 
     void Start()
     {
@@ -76,7 +84,6 @@ public class GameUI : MonoBehaviour
         {
             logHistory.Add(message);
 
-            // ✅ Ограничиваем количество логов
             if (logHistory.Count > maxLogs)
             {
                 logHistory.RemoveAt(0);
@@ -84,7 +91,6 @@ public class GameUI : MonoBehaviour
 
             logText.text = string.Join("\n", logHistory);
 
-            // ✅ Прокручиваем вниз, чтобы видеть новые логи
             if (logScroll != null)
             {
                 Canvas.ForceUpdateCanvases();
@@ -94,47 +100,58 @@ public class GameUI : MonoBehaviour
     }
 
     public void UpdateCharacterDamage(Character character, string bodyPart, int hits)
-{
-    Image targetMask = null;
-    Color damageColor = new Color(1, 1, 1, 0); // По умолчанию прозрачный (нет урона)
-
-    if (character.IsPlayer)
     {
-        if (bodyPart == "Head")
-        {
-            targetMask = playerHeadMask;
-            if (hits == 1) damageColor = new Color(240f / 255f, 128f / 255f, 128f / 255f, 1f); // #F08080
-            else if (hits >= 2) damageColor = new Color(139f / 255f, 0f, 0f, 1f); // #8B0000
-        }
-        else if (bodyPart == "Torso")
-        {
-            targetMask = playerTorsoMask;
-            if (hits == 1) damageColor = new Color(240f / 255f, 128f / 255f, 128f / 255f, 1f);
-            else if (hits == 2) damageColor = new Color(178f / 255f, 34f / 255f, 34f / 255f, 1f); // #B22222
-            else if (hits >= 3) damageColor = new Color(139f / 255f, 0f, 0f, 1f); // #8B0000
-        }
-    }
-    else
-    {
-        if (bodyPart == "Head")
-        {
-            targetMask = enemyHeadMask;
-            if (hits == 1) damageColor = new Color(240f / 255f, 128f / 255f, 128f / 255f, 1f);
-            else if (hits >= 2) damageColor = new Color(139f / 255f, 0f, 0f, 1f);
-        }
-        else if (bodyPart == "Torso")
-        {
-            targetMask = enemyTorsoMask;
-            if (hits == 1) damageColor = new Color(240f / 255f, 128f / 255f, 128f / 255f, 1f);
-            else if (hits == 2) damageColor = new Color(178f / 255f, 34f / 255f, 34f / 255f, 1f);
-            else if (hits >= 3) damageColor = new Color(139f / 255f, 0f, 0f, 1f);
-        }
-    }
+        Image targetMask = null;
+        Color damageColor = new Color(1, 1, 1, 0);
 
-    if (targetMask == null) return;
+        if (character.IsPlayer)
+        {
+            if (bodyPart == "Head")
+            {
+                targetMask = playerHeadMask;
+                if (hits == 1)
+                    damageColor = new Color(240f / 255f, 128f / 255f, 128f / 255f, 1f);
+                else if (hits >= 2)
+                    damageColor = new Color(139f / 255f, 0f, 0f, 1f);
+            }
+            else if (bodyPart == "Torso")
+            {
+                targetMask = playerTorsoMask;
+                if (hits == 1)
+                    damageColor = new Color(240f / 255f, 128f / 255f, 128f / 255f, 1f);
+                else if (hits == 2)
+                    damageColor = new Color(178f / 255f, 34f / 255f, 34f / 255f, 1f);
+                else if (hits >= 3)
+                    damageColor = new Color(139f / 255f, 0f, 0f, 1f);
+            }
+        }
+        else
+        {
+            if (bodyPart == "Head")
+            {
+                targetMask = enemyHeadMask;
+                if (hits == 1)
+                    damageColor = new Color(240f / 255f, 128f / 255f, 128f / 255f, 1f);
+                else if (hits >= 2)
+                    damageColor = new Color(139f / 255f, 0f, 0f, 1f);
+            }
+            else if (bodyPart == "Torso")
+            {
+                targetMask = enemyTorsoMask;
+                if (hits == 1)
+                    damageColor = new Color(240f / 255f, 128f / 255f, 128f / 255f, 1f);
+                else if (hits == 2)
+                    damageColor = new Color(178f / 255f, 34f / 255f, 34f / 255f, 1f);
+                else if (hits >= 3)
+                    damageColor = new Color(139f / 255f, 0f, 0f, 1f);
+            }
+        }
 
-    targetMask.color = damageColor;
-}
+        if (targetMask == null)
+            return;
+
+        targetMask.color = damageColor;
+    }
 
     private void ResetDamageMasks()
     {
@@ -151,7 +168,9 @@ public class GameUI : MonoBehaviour
             CardButton cardButton = child.GetComponent<CardButton>();
             if (cardButton != null && cardButton.Card != null)
             {
-                child.GetComponent<Image>().color = selectedCards.Contains(cardButton.Card) ? Color.yellow : Color.white;
+                child.GetComponent<Image>().color = selectedCards.Contains(cardButton.Card)
+                    ? Color.yellow
+                    : Color.white;
             }
         }
     }
@@ -169,11 +188,28 @@ public class GameUI : MonoBehaviour
             return;
         }
 
-        string logMessage = $"<b>Игрок сыграл:</b> {string.Join(", ", playerCards.Select(card => card.Name))}\n" +
-                            $"<b>Оппонент сыграл:</b> {enemyCard.Name}\n" +
-                            "<size=18>---------------------------</size>";
+        string logMessage =
+            $"<b>Игрок сыграл:</b> {string.Join(", ", playerCards.Select(card => card.Name))}\n"
+            + $"<b>Оппонент сыграл:</b> {enemyCard.Name}\n"
+            + "<size=18>---------------------------</size>";
 
         LogAction(logMessage);
+    }
+
+    public void ShowFloatingMessage(string message)
+    {
+        if (floatingMessagePrefab == null || floatingMessageParent == null)
+            return;
+
+        GameObject msg = Instantiate(floatingMessagePrefab, floatingMessageParent);
+        TextMeshProUGUI text = msg.GetComponentInChildren<TextMeshProUGUI>();
+        if (text != null)
+            text.text = message;
+
+        Destroy(msg, 2f); // удалим через 2 секунды
+
+        // добавим анимацию вверх (если хочешь — через аниматор или LeanTween/DOTween)
+        msg.transform.localPosition += new Vector3(0, 30, 0);
     }
 
     public void ClearLog()
@@ -183,5 +219,13 @@ public class GameUI : MonoBehaviour
         {
             logText.text = "";
         }
+    }
+
+    public void UpdateEnergy(Character player, Character enemy)
+    {
+        if (playerEnergyText != null)
+            playerEnergyText.text = $"Энергия: {player.Energy}/30";
+        if (enemyEnergyText != null)
+            enemyEnergyText.text = $"Энергия: {enemy.Energy}/30";
     }
 }

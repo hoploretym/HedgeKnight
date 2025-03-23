@@ -3,7 +3,9 @@ using UnityEngine;
 
 public class Character : MonoBehaviour
 {
-    public int Energy { get; private set; } = 3;
+    public int Energy { get; private set; } = 30;
+    private const int MaxEnergy = 30;
+
     public int HeadHits { get; private set; } = 0;
     public int TorsoHits { get; private set; } = 0;
     public bool IsPlayer;
@@ -17,13 +19,18 @@ public class Character : MonoBehaviour
 
     public void ResetEnergy()
     {
-        Energy = 3;
+        Energy = MaxEnergy;
         ResetDefense();
     }
 
     public void UseEnergy(int amount)
     {
         Energy = Mathf.Max(0, Energy - amount);
+    }
+
+    public void GainEnergy(int amount)
+    {
+        Energy = Mathf.Min(MaxEnergy, Energy + amount);
     }
 
     public void TakeDamage(int amount, string bodyPart)
@@ -39,16 +46,21 @@ public class Character : MonoBehaviour
         if (bodyPart == "Head")
         {
             HeadHits++;
-            if (HeadHits >= 2) Die();
+            if (HeadHits >= 2)
+                Die();
         }
         else if (bodyPart == "Torso")
         {
             TorsoHits++;
-            if (TorsoHits >= 3) Die();
+            if (TorsoHits >= 3)
+                Die();
         }
 
-        // 🔴 **Обновляем цвет маски повреждений**
-        GameManager.Instance.gameUI.UpdateCharacterDamage(this, bodyPart, bodyPart == "Head" ? HeadHits : TorsoHits);
+        GameManager.Instance.gameUI.UpdateCharacterDamage(
+            this,
+            bodyPart,
+            bodyPart == "Head" ? HeadHits : TorsoHits
+        );
     }
 
     public void Die()

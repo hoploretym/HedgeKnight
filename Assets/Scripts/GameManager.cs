@@ -62,6 +62,8 @@ public class GameManager : MonoBehaviour
         player.ResetEnergy();
         enemy.ResetEnergy();
 
+        gameUI.UpdateEnergy(player, enemy);
+
         playerHand.DrawNewHand();
         enemyHand.DrawNewHand();
     }
@@ -114,6 +116,11 @@ public class GameManager : MonoBehaviour
         roundLog.Add($"Эффект: {result}");
         playerHand.RemoveCard(playerSelectedCard);
 
+        if (playerSelectedCard.Type == CardType.Defense)
+            player.GainEnergy(Mathf.Abs(playerSelectedCard.EnergyCost));
+        else
+            player.UseEnergy(playerSelectedCard.EnergyCost);
+
         if (enemyChosenCard != null)
         {
             string enemyResult = ApplyCardEffects(
@@ -125,6 +132,11 @@ public class GameManager : MonoBehaviour
             roundLog.Add($"<b>Противник сыграл карту:</b> {enemyChosenCard.Name}");
             roundLog.Add($"Эффект: {enemyResult}");
             enemyHand.RemoveCard(enemyChosenCard);
+
+            if (enemyChosenCard.Type == CardType.Defense)
+                enemy.GainEnergy(Mathf.Abs(enemyChosenCard.EnergyCost));
+            else
+                enemy.UseEnergy(enemyChosenCard.EnergyCost);
         }
 
         playerSelectedCard = null;
@@ -149,6 +161,7 @@ public class GameManager : MonoBehaviour
                 roundLog.Add("<color=yellow>Противник добирает карту</color>");
         }
 
+        gameUI.UpdateEnergy(player, enemy);
         gameUI.RefreshHandUI();
         gameUI.LogRoundResults(roundLog);
 

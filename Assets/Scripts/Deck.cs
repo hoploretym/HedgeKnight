@@ -67,15 +67,15 @@ public class Deck : MonoBehaviour
 
     public void FillDeck()
     {
-        AddCard(new Card("atk_01", "Overhead Strike", CardType.Attack, "Head", 1, 1));
-        AddCard(new Card("atk_02", "Thrust", CardType.Attack, "Torso", 1, 1));
-        AddCard(new Card("atk_03", "Low Cut", CardType.Attack, "Legs", 1, 1));
-        AddCard(new Card("atk_04", "Mordhau Strike", CardType.Attack, "Arms", 1, 1));
+        AddCard(new Card("atk_01", "Overhead Strike", CardType.Attack, "Head", 5, 1));
+        AddCard(new Card("atk_02", "Thrust", CardType.Attack, "Torso", 5, 1));
+        AddCard(new Card("atk_03", "Low Cut", CardType.Attack, "Legs", 5, 1));
+        AddCard(new Card("atk_04", "Mordhau Strike", CardType.Attack, "Arms", 5, 1));
 
-        AddCard(new Card("spc_01", "Pommel Strike", CardType.Special, "Head", 1, 1));
-        AddCard(new Card("spc_02", "Shield Slam", CardType.Special, "Torso", 1, 1));
-        AddCard(new Card("spc_03", "Parry & Riposte", CardType.Special, "Arms", 1, 1));
-        AddCard(new Card("spc_04", "Hook & Pull", CardType.Special, "Legs", 1, 1));
+        AddCard(new Card("spc_01", "Pommel Strike", CardType.Special, "Head", 5, 1));
+        AddCard(new Card("spc_02", "Shield Slam", CardType.Special, "Torso", 5, 1));
+        AddCard(new Card("spc_03", "Parry & Riposte", CardType.Special, "Arms", 5, 1));
+        AddCard(new Card("spc_04", "Hook & Pull", CardType.Special, "Legs", 5, 1));
 
         AddCard(
             new Card(
@@ -83,7 +83,7 @@ public class Deck : MonoBehaviour
                 "High Guard",
                 CardType.Defense,
                 "Head",
-                -1,
+                -5,
                 0,
                 new string[] { "Overhead Strike", "Pommel Strike", "Cross Guard Punch" }
             )
@@ -94,7 +94,7 @@ public class Deck : MonoBehaviour
                 "Brace Stance",
                 CardType.Defense,
                 "Torso",
-                -1,
+                -5,
                 0,
                 new string[] { "Thrust", "Shield Slam", "Half-Swording" }
             )
@@ -105,7 +105,7 @@ public class Deck : MonoBehaviour
                 "Guarded Step Back",
                 CardType.Defense,
                 "Legs",
-                -1,
+                -5,
                 0,
                 new string[] { "Low Cut", "Hook & Pull", "Mordhau Strike" }
             )
@@ -116,7 +116,7 @@ public class Deck : MonoBehaviour
                 "Strong Grip",
                 CardType.Defense,
                 "Arms",
-                -1,
+                -5,
                 0,
                 new string[] { "Parry & Riposte", "Thrust", "Hook & Pull" }
             )

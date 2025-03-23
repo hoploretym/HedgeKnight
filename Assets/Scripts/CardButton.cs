@@ -6,6 +6,7 @@ public class CardButton : MonoBehaviour
 {
     private HandManager handManager;
     public TextMeshProUGUI cardNameText;
+    public TextMeshProUGUI energyCostText;
     public Image cardImage;
     private Button button;
     public Card Card { get; private set; }
@@ -14,7 +15,7 @@ public class CardButton : MonoBehaviour
     {
         if (card == null)
         {
-            Debug.LogError($"[CardButton] Ошибка: передана NULL-карта в Initialize!");
+            Debug.LogError("[CardButton] Ошибка: передана NULL-карта в Initialize!");
             return;
         }
 
@@ -28,6 +29,12 @@ public class CardButton : MonoBehaviour
         if (cardNameText != null)
         {
             cardNameText.text = card.Name;
+        }
+
+        if (energyCostText != null)
+        {
+            string prefix = Card.Type == CardType.Defense ? "+" : "-";
+            energyCostText.text = $"{prefix}{Mathf.Abs(Card.EnergyCost)}";
         }
 
         UpdateCardAppearance();
@@ -60,12 +67,20 @@ public class CardButton : MonoBehaviour
             return;
         }
 
-        // ✅ Теперь мы получаем правильный индекс карты из массива
         int index = handManager.cardsInHand.IndexOf(Card);
 
         if (index == -1)
         {
             Debug.LogError($"[CardButton] Ошибка: Карта {Card.Name} не найдена в руке!");
+            return;
+        }
+
+        Character player = GameManager.Instance.playerController.GetCharacter();
+
+        // 🧠 Проверка энергии
+        if (Card.Type != CardType.Defense && player.Energy < Card.EnergyCost)
+        {
+            GameManager.Instance.gameUI.ShowFloatingMessage("Недостаточно энергии!");
             return;
         }
 
