@@ -22,6 +22,9 @@ public class GameManager : MonoBehaviour
     private int turnNumber = 1;
     private Character pendingLoser = null;
 
+    private bool playerDead = false;
+    private bool enemyDead = false;
+
     public enum Outcome
     {
         Win,
@@ -188,6 +191,23 @@ public class GameManager : MonoBehaviour
             return;
         }
 
+        if (playerDead && enemyDead)
+        {
+            EndBattle(player); // Игрок проигрывает при ничьей
+            return;
+        }
+
+        if (playerDead)
+        {
+            EndBattle(player);
+            return;
+        }
+        if (enemyDead)
+        {
+            EndBattle(enemy);
+            return;
+        }
+
         if (CheckBattleEnd())
             return;
 
@@ -316,8 +336,13 @@ public class GameManager : MonoBehaviour
 
     public void RegisterPendingDeath(Character c)
     {
-        if (!battleEnded && pendingLoser == null)
-            pendingLoser = c;
+        if (battleEnded)
+            return;
+
+        if (c.IsPlayer)
+            playerDead = true;
+        else
+            enemyDead = true;
     }
 
     public bool CheckBattleEnd()
@@ -335,7 +360,6 @@ public class GameManager : MonoBehaviour
             EndBattle(enemy);
             return true;
         }
-
         return false;
     }
 
@@ -345,13 +369,13 @@ public class GameManager : MonoBehaviour
             return;
 
         battleEnded = true;
+        playerDead = false;
+        enemyDead = false;
 
         bool playerLost = loser.IsPlayer;
-
         string resultMessage = playerLost ? "Игрок проиграл!" : "Игрок победил!";
 
         Debug.Log(resultMessage);
-
         gameUI.ShowGameResult(!playerLost);
     }
 }
