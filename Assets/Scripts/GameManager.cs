@@ -21,6 +21,13 @@ public class GameManager : MonoBehaviour
     public bool battleEnded = false;
     private int turnNumber = 1;
 
+    public enum Outcome
+    {
+        Win,
+        Lose,
+        Tie,
+    }
+
     void Awake()
     {
         if (Instance == null)
@@ -177,35 +184,123 @@ public class GameManager : MonoBehaviour
         waitingForChoices = true;
     }
 
-    private string ApplyCardEffects(
+    private Outcome GetOutcome(CardType attacker, CardType defender)
+    {
+        if (attacker == defender)
+            return Outcome.Tie;
+
+        if (
+            (attacker == CardType.Attack && defender == CardType.Special)
+            || (attacker == CardType.Special && defender == CardType.Defense)
+            || (attacker == CardType.Defense && defender == CardType.Attack)
+        )
+        {
+            return Outcome.Win;
+        }
+
+        return Outcome.Lose;
+    }
+
+    public string ApplyCardEffects(
         Card card,
         Character attacker,
-        Character target,
-        Card opponentCard
+        Character defender,
+        Card enemyCard
     )
     {
-        if (card == null)
-            return "Ошибка: карта отсутствует!";
+        Outcome result = GetOutcome(card.Type, enemyCard.Type);
+        bool sameTarget = card.TargetBodyPart == enemyCard.TargetBodyPart;
 
-        if (card.Type == CardType.Defense)
-        {
-            target.SetDefense(card.TargetBodyPart);
-            return $"<color=blue>{target.name} активировал защиту на {card.TargetBodyPart}.</color>";
-        }
-        else
-        {
-            if (
-                opponentCard != null
-                && opponentCard.Type == CardType.Defense
-                && System.Array.Exists(opponentCard.Counters, c => c == card.Name)
-            )
-            {
-                return $"<color=blue>{target.name} заблокировал атаку {card.Name} с помощью {opponentCard.Name}!</color>";
-            }
+        int finalDamage = card.Damage;
+        if (sameTarget)
+            finalDamage *= 2;
 
-            target.TakeDamage(card.Damage, card.TargetBodyPart);
-            return $"<color=red>{target.name} получил {card.Damage} урона в {card.TargetBodyPart}!</color>";
+        string log = "";
+
+        switch (card.Type)
+        {
+            case CardType.Attack:
+                switch (result)
+                {
+                    case Outcome.Win:
+                        log += "Победа: удар проходит!";
+                        defender.TakeDamage(finalDamage, card.TargetBodyPart);
+                        break;
+
+                    case Outcome.Lose:
+                        log += "Проигрыш: атака заблокирована.";
+                        if (sameTarget)
+                        {
+                            int energyGain = Mathf.Abs(enemyCard.EnergyCost) * 2;
+                            defender.GainEnergy(energyGain);
+                            log += $" Противник восстанавливает {energyGain} энергии!";
+                        }
+                        break;
+
+                    case Outcome.Tie:
+                        log += "Ничья: обмен ударами!";
+                        defender.TakeDamage(finalDamage, card.TargetBodyPart);
+                        attacker.TakeDamage(
+                            sameTarget ? enemyCard.Damage * 2 : enemyCard.Damage,
+                            enemyCard.TargetBodyPart
+                        );
+                        break;
+                }
+                break;
+
+            case CardType.Defense:
+                int energyToGain = Mathf.Abs(card.EnergyCost);
+                switch (result)
+                {
+                    case Outcome.Win:
+                        if (sameTarget)
+                            energyToGain *= 2;
+                        attacker.GainEnergy(energyToGain);
+                        log += $"Победа: восстановлено {energyToGain} энергии.";
+                        break;
+
+                    case Outcome.Lose:
+                        attacker.GainEnergy(energyToGain);
+                        int incomingDamage = sameTarget ? enemyCard.Damage * 2 : enemyCard.Damage;
+                        attacker.TakeDamage(incomingDamage, enemyCard.TargetBodyPart);
+                        log +=
+                            $"Проигрыш: получен урон {incomingDamage}, восстановлено {energyToGain} энергии.";
+                        break;
+
+                    case Outcome.Tie:
+                        attacker.GainEnergy(energyToGain);
+                        log += $"Ничья: восстановлено {energyToGain} энергии.";
+                        break;
+                }
+                break;
+
+            case CardType.Special:
+                switch (result)
+                {
+                    case Outcome.Win:
+                        log += "Победа: специальный приём сработал!";
+                        defender.TakeDamage(finalDamage, card.TargetBodyPart);
+                        break;
+
+                    case Outcome.Lose:
+                        int dmg = sameTarget ? enemyCard.Damage * 2 : enemyCard.Damage;
+                        attacker.TakeDamage(dmg, enemyCard.TargetBodyPart);
+                        log += $"Проигрыш: получен урон {dmg}.";
+                        break;
+
+                    case Outcome.Tie:
+                        log += "Ничья: обмен ударами!";
+                        defender.TakeDamage(finalDamage, card.TargetBodyPart);
+                        attacker.TakeDamage(
+                            sameTarget ? enemyCard.Damage * 2 : enemyCard.Damage,
+                            enemyCard.TargetBodyPart
+                        );
+                        break;
+                }
+                break;
         }
+
+        return log;
     }
 
     public bool CheckBattleEnd()
