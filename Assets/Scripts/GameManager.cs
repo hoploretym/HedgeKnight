@@ -205,12 +205,12 @@ public class GameManager : MonoBehaviour
         if (battleEnded)
             return true;
 
-        if (player.HeadHits >= 2 || player.TorsoHits >= 3)
+        if (player.HeadHP <= 0 || player.TorsoHP <= 0)
         {
             EndBattle(player);
             return true;
         }
-        if (enemy.HeadHits >= 2 || enemy.TorsoHits >= 3)
+        if (enemy.HeadHP <= 0 || enemy.TorsoHP <= 0)
         {
             EndBattle(enemy);
             return true;

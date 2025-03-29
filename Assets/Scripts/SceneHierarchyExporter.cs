@@ -1,6 +1,6 @@
-using UnityEngine;
 using System.IO;
 using System.Text;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class SceneHierarchyExporter : MonoBehaviour
@@ -27,7 +27,9 @@ public class SceneHierarchyExporter : MonoBehaviour
 
     void ExportObject(Transform obj, int level, StringBuilder sb)
     {
-        sb.AppendLine(new string('-', level * 2) + obj.name + " [" + obj.gameObject.activeSelf + "]");
+        sb.AppendLine(
+            new string('-', level * 2) + obj.name + " [" + obj.gameObject.activeSelf + "]"
+        );
 
         foreach (Component comp in obj.GetComponents<Component>())
         {

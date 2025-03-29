@@ -38,6 +38,7 @@ GameCanvas [True]
 --GameUI [True]
     - RectTransform
     - GameUI
+    - TooltipUIController
 --LogText [True]
     - RectTransform
     - CanvasRenderer
@@ -81,34 +82,54 @@ GameCanvas [True]
     - CanvasRenderer
     - Image
     - HorizontalLayoutGroup
---CharacterPanel [True]
+--PlayerBaseSprite [True]
     - RectTransform
     - CanvasRenderer
     - Image
-----PlayerBaseSprite [True]
-      - RectTransform
-      - CanvasRenderer
-      - Image
-----EnemyBaseSprite [True]
-      - RectTransform
-      - CanvasRenderer
-      - Image
-----EnemyHeadMask [True]
-      - RectTransform
-      - CanvasRenderer
-      - Image
-----EnemyTorsoMask [True]
-      - RectTransform
-      - CanvasRenderer
-      - Image
-----PlayerTorsoMask [True]
-      - RectTransform
-      - CanvasRenderer
-      - Image
-----PlayerHeadMask [True]
-      - RectTransform
-      - CanvasRenderer
-      - Image
+--PlayerHeadMask [True]
+    - RectTransform
+    - CanvasRenderer
+    - Image
+    - BodyPartTooltipHandler
+--PlayerTorsoMask [True]
+    - RectTransform
+    - CanvasRenderer
+    - Image
+    - BodyPartTooltipHandler
+--PlayerArmsMask [True]
+    - RectTransform
+    - CanvasRenderer
+    - Image
+    - BodyPartTooltipHandler
+--PlayerLegsMask [True]
+    - RectTransform
+    - CanvasRenderer
+    - Image
+    - BodyPartTooltipHandler
+--EnemyBaseSprite [True]
+    - RectTransform
+    - CanvasRenderer
+    - Image
+--EnemyHeadMask [True]
+    - RectTransform
+    - CanvasRenderer
+    - Image
+    - BodyPartTooltipHandler
+--EnemyTorsoMask [True]
+    - RectTransform
+    - CanvasRenderer
+    - Image
+    - BodyPartTooltipHandler
+--EnemyArmsMask [True]
+    - RectTransform
+    - CanvasRenderer
+    - Image
+    - BodyPartTooltipHandler
+--EnemyLegsMask [True]
+    - RectTransform
+    - CanvasRenderer
+    - Image
+    - BodyPartTooltipHandler
 --PlayerEnergyText [True]
     - RectTransform
     - CanvasRenderer
@@ -117,6 +138,14 @@ GameCanvas [True]
     - RectTransform
     - CanvasRenderer
     - TextMeshProUGUI
+--TooltipPanel [False]
+    - RectTransform
+    - CanvasRenderer
+    - Image
+----TooltipText [True]
+      - RectTransform
+      - CanvasRenderer
+      - TextMeshProUGUI
 --CardPrefab [True]
     - RectTransform
     - CanvasRenderer
