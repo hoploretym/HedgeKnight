@@ -91,21 +91,25 @@ GameCanvas [True]
     - CanvasRenderer
     - Image
     - BodyPartTooltipHandler
+    - BodyPartHoverVisual
 --PlayerTorsoMask [True]
     - RectTransform
     - CanvasRenderer
     - Image
     - BodyPartTooltipHandler
+    - BodyPartHoverVisual
 --PlayerArmsMask [True]
     - RectTransform
     - CanvasRenderer
     - Image
     - BodyPartTooltipHandler
+    - BodyPartHoverVisual
 --PlayerLegsMask [True]
     - RectTransform
     - CanvasRenderer
     - Image
     - BodyPartTooltipHandler
+    - BodyPartHoverVisual
 --EnemyBaseSprite [True]
     - RectTransform
     - CanvasRenderer
@@ -179,6 +183,70 @@ GameCanvas [True]
       - RectTransform
       - CanvasRenderer
       - TextMeshProUGUI
+--PlayerHeadLine [True]
+    - RectTransform
+    - CanvasRenderer
+    - Image
+----PlayerHeadHPText [True]
+      - RectTransform
+      - CanvasRenderer
+      - TextMeshProUGUI
+--PlayerTorsoLine [True]
+    - RectTransform
+    - CanvasRenderer
+    - Image
+----PlayerTorsoHPText [True]
+      - RectTransform
+      - CanvasRenderer
+      - TextMeshProUGUI
+--PlayerArmsLine [True]
+    - RectTransform
+    - CanvasRenderer
+    - Image
+----PlayerArmsHPText [True]
+      - RectTransform
+      - CanvasRenderer
+      - TextMeshProUGUI
+----PlayerLegsLine [True]
+      - RectTransform
+      - CanvasRenderer
+      - Image
+------PlayerLegsHPText [True]
+        - RectTransform
+        - CanvasRenderer
+        - TextMeshProUGUI
+----EnemyLegsLine [True]
+      - RectTransform
+      - CanvasRenderer
+      - Image
+------EnemyLegsHPText [True]
+        - RectTransform
+        - CanvasRenderer
+        - TextMeshProUGUI
+------EnemyTorsoLine [True]
+        - RectTransform
+        - CanvasRenderer
+        - Image
+--------EnemyTorsoHPText [True]
+          - RectTransform
+          - CanvasRenderer
+          - TextMeshProUGUI
+------EnemyArmsLine [True]
+        - RectTransform
+        - CanvasRenderer
+        - Image
+--------EnemyArmsHPText [True]
+          - RectTransform
+          - CanvasRenderer
+          - TextMeshProUGUI
+----EnemyHeadLine [True]
+      - RectTransform
+      - CanvasRenderer
+      - Image
+------EnemyHeadHPText [True]
+        - RectTransform
+        - CanvasRenderer
+        - TextMeshProUGUI
 SceneHierarchyExporter [True]
   - Transform
   - SceneHierarchyExporter
