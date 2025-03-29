@@ -67,15 +67,15 @@ public class Deck : MonoBehaviour
 
     public void FillDeck()
     {
-        AddCard(new Card("atk_01", "Overhead Strike", CardType.Attack, "Head", 5, 1));
-        AddCard(new Card("atk_02", "Thrust", CardType.Attack, "Torso", 5, 1));
-        AddCard(new Card("atk_03", "Low Cut", CardType.Attack, "Legs", 5, 1));
-        AddCard(new Card("atk_04", "Mordhau Strike", CardType.Attack, "Arms", 5, 1));
+        AddCard(new Card("atk_01", "Overhead Strike", CardType.Attack, "Head", 5, 5));
+        AddCard(new Card("atk_02", "Thrust", CardType.Attack, "Torso", 5, 5));
+        AddCard(new Card("atk_03", "Low Cut", CardType.Attack, "Legs", 5, 5));
+        AddCard(new Card("atk_04", "Mordhau Strike", CardType.Attack, "Arms", 5, 5));
 
-        AddCard(new Card("spc_01", "Pommel Strike", CardType.Special, "Head", 5, 1));
-        AddCard(new Card("spc_02", "Shield Slam", CardType.Special, "Torso", 5, 1));
-        AddCard(new Card("spc_03", "Parry & Riposte", CardType.Special, "Arms", 5, 1));
-        AddCard(new Card("spc_04", "Hook & Pull", CardType.Special, "Legs", 5, 1));
+        AddCard(new Card("spc_01", "Pommel Strike", CardType.Special, "Head", 5, 5));
+        AddCard(new Card("spc_02", "Shield Slam", CardType.Special, "Torso", 5, 5));
+        AddCard(new Card("spc_03", "Parry & Riposte", CardType.Special, "Arms", 5, 5));
+        AddCard(new Card("spc_04", "Hook & Pull", CardType.Special, "Legs", 5, 5));
 
         AddCard(
             new Card(

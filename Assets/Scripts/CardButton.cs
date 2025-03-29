@@ -92,13 +92,6 @@ public class CardButton : MonoBehaviour
         }
 
         Character player = GameManager.Instance.playerController.GetCharacter();
-
-        if (Card.Type != CardType.Defense && player.Energy < Card.EnergyCost)
-        {
-            GameManager.Instance.gameUI.ShowFloatingMessage("Недостаточно энергии!");
-            return;
-        }
-
         Debug.Log($"[DEBUG] Клик по карте {Card.Name} (индекс {index})");
         GameManager.Instance.PlayerSelectCard(index);
     }

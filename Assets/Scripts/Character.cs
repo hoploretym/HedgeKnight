@@ -150,7 +150,7 @@ public class Character : MonoBehaviour
         return defense.ContainsKey(bodyPart) && defense[bodyPart];
     }
 
-    private void ResetDefense()
+    public void ResetDefense()
     {
         defense.Clear();
     }

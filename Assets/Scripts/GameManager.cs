@@ -106,11 +106,17 @@ public class GameManager : MonoBehaviour
         }
 
         waitingForChoices = false;
+
+        // ✅ Сбрасываем защиту до применения карт
+        player.ResetDefense();
+        enemy.ResetDefense();
+
         enemyChosenCard = enemyHand.GetRandomCard();
 
         List<string> roundLog = new List<string>();
         roundLog.Add($"<b>Ход {turnNumber}.</b>");
 
+        // 💥 Применяем карту игрока
         string result = ApplyCardEffects(playerSelectedCard, player, enemy, enemyChosenCard);
         roundLog.Add($"<b>Сыграна карта:</b> {playerSelectedCard.Name}");
         roundLog.Add($"Эффект: {result}");
@@ -121,6 +127,7 @@ public class GameManager : MonoBehaviour
         else
             player.UseEnergy(playerSelectedCard.EnergyCost);
 
+        // 💥 Применяем карту врага
         if (enemyChosenCard != null)
         {
             string enemyResult = ApplyCardEffects(
@@ -144,6 +151,7 @@ public class GameManager : MonoBehaviour
         if (CheckBattleEnd())
             return;
 
+        // 🔁 Добор карт
         int playerHandBefore = playerHand.cardsInHand.Count;
         int enemyHandBefore = enemyHand.CardsInHandCount;
 

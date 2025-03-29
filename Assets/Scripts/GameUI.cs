@@ -33,15 +33,10 @@ public class GameUI : MonoBehaviour
     private readonly Color darkRed = new Color(139f / 255f, 0f, 0f, 1f); // Темно-красный цвет после получения максимального урона по ХП
 
     // Тултипы отображения ХП при наведении курсора на маску
-    public GameObject bodyPartTooltip;
-    public TextMeshProUGUI bodyPartTooltipText;
 
     // Отображение энергии Player и Enemy
     public TextMeshProUGUI playerEnergyText;
     public TextMeshProUGUI enemyEnergyText;
-
-    public GameObject floatingMessagePrefab; // Префаб текста - пока не используется
-    public Transform floatingMessageParent; // Панель или Canvas - пока не используется
 
     private List<string> logHistory = new List<string>();
     private const int maxLogs = 7;
@@ -161,12 +156,16 @@ public class GameUI : MonoBehaviour
 
         if (currentHP == maxHP)
         {
-            mask.color = new Color(1, 1, 1, 0); // прозрачный (здоров)
+            mask.color = new Color(1, 1, 1, 0); // прозрачный
         }
         else
         {
             float damagePercent = 1f - ((float)currentHP / maxHP);
-            mask.color = Color.Lerp(lightRed, darkRed, damagePercent);
+            Color newColor = Color.Lerp(lightRed, darkRed, damagePercent);
+            Debug.Log(
+                $"[UpdateDamageMask] {mask.name}: HP {currentHP}/{maxHP} → {damagePercent * 100:F0}% урона → цвет {newColor}"
+            );
+            mask.color = newColor;
         }
     }
 
@@ -181,29 +180,6 @@ public class GameUI : MonoBehaviour
         enemyTorsoMask.color = new Color(1, 1, 1, 0);
         enemyArmsMask.color = new Color(1, 1, 1, 0);
         enemyLegsMask.color = new Color(1, 1, 1, 0);
-    }
-
-    public void ShowBodyPartTooltip(bool isPlayer, string part, bool show, Vector3 worldPos)
-    {
-        if (!show)
-        {
-            bodyPartTooltip.SetActive(false);
-            return;
-        }
-
-        Character c = isPlayer
-            ? GameManager.Instance.playerController.GetCharacter()
-            : GameManager.Instance.enemyController.GetCharacter();
-
-        int current = c.GetCurrentHP(part);
-        int max = c.GetMaxHP(part);
-
-        bodyPartTooltipText.text = $"{part}: {current} / {max}";
-        bodyPartTooltip.SetActive(true);
-
-        // Преобразуем мировую позицию в UI-позицию
-        Vector2 screenPoint = RectTransformUtility.WorldToScreenPoint(Camera.main, worldPos);
-        bodyPartTooltip.transform.position = screenPoint + new Vector2(10, 10); // немного сместим от курсора
     }
 
     public void DebugAllBodyParts()
@@ -251,22 +227,6 @@ public class GameUI : MonoBehaviour
             + "<size=18>---------------------------</size>";
 
         LogAction(logMessage);
-    }
-
-    public void ShowFloatingMessage(string message)
-    {
-        if (floatingMessagePrefab == null || floatingMessageParent == null)
-            return;
-
-        GameObject msg = Instantiate(floatingMessagePrefab, floatingMessageParent);
-        TextMeshProUGUI text = msg.GetComponentInChildren<TextMeshProUGUI>();
-        if (text != null)
-            text.text = message;
-
-        Destroy(msg, 2f); // удалим через 2 секунды
-
-        // добавим анимацию вверх (если хочешь — через аниматор или LeanTween/DOTween)
-        msg.transform.localPosition += new Vector3(0, 30, 0);
     }
 
     public void ClearLog()
