@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
@@ -48,6 +49,10 @@ public class GameUI : MonoBehaviour
     // Отображение энергии Player и Enemy
     public TextMeshProUGUI playerEnergyText;
     public TextMeshProUGUI enemyEnergyText;
+
+    // Сообщение о результатах боя
+    public CanvasGroup gameResultPanel;
+    public TextMeshProUGUI gameResultText;
 
     private List<string> logHistory = new List<string>();
     private const int maxLogs = 7;
@@ -281,5 +286,44 @@ public class GameUI : MonoBehaviour
             playerEnergyText.text = $"Энергия: {player.Energy}/30";
         if (enemyEnergyText != null)
             enemyEnergyText.text = $"Энергия: {enemy.Energy}/30";
+    }
+
+    public void ShowGameResult(bool isPlayerWin)
+    {
+        StartCoroutine(FadeGameResult(isPlayerWin));
+    }
+
+    private IEnumerator FadeGameResult(bool isPlayerWin)
+    {
+        gameResultPanel.alpha = 0f;
+        gameResultPanel.gameObject.SetActive(true);
+
+        gameResultText.text = isPlayerWin ? "ПОБЕДА!" : "ПОРАЖЕНИЕ";
+        gameResultText.color = isPlayerWin ? Color.green : Color.red;
+
+        // ⏱ подождать, чтобы сначала увидеть логи
+        yield return new WaitForSeconds(1f);
+
+        // ⬆ плавно появиться
+        float t = 0f;
+        while (t < 1f)
+        {
+            t += Time.deltaTime;
+            gameResultPanel.alpha = t;
+            yield return null;
+        }
+
+        // ⏳ висит чуть-чуть
+        yield return new WaitForSeconds(2f);
+
+        // ⬇ плавное исчезновение
+        while (t > 0f)
+        {
+            t -= Time.deltaTime;
+            gameResultPanel.alpha = t;
+            yield return null;
+        }
+
+        gameResultPanel.gameObject.SetActive(false);
     }
 }

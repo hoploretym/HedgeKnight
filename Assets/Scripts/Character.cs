@@ -15,15 +15,9 @@ public class Character : MonoBehaviour
     private const int MaxArmsHP = 30;
     private const int MaxLegsHP = 30;
 
-    public bool HasArmDebuff()
-    {
-        return isArmDisabled;
-    }
+    public bool HasArmDebuff() => isArmDisabled;
 
-    public bool HasLegDebuff()
-    {
-        return isLegDisabled;
-    }
+    public bool HasLegDebuff() => isLegDisabled;
 
     private bool isArmDisabled = false;
     private bool isLegDisabled = false;
@@ -67,13 +61,9 @@ public class Character : MonoBehaviour
         {
             case "Head":
                 HeadHP = Mathf.Max(0, HeadHP - amount);
-                if (HeadHP == 0)
-                    Die();
                 break;
             case "Torso":
                 TorsoHP = Mathf.Max(0, TorsoHP - amount);
-                if (TorsoHP == 0)
-                    Die();
                 break;
             case "Arms":
                 ArmsHP = Mathf.Max(0, ArmsHP - amount);
@@ -88,56 +78,43 @@ public class Character : MonoBehaviour
         }
 
         GameManager.Instance.gameUI.UpdateCharacterDamage(this, bodyPart, GetCurrentHP(bodyPart));
+
+        if (HeadHP == 0 || TorsoHP == 0)
+        {
+            GameManager.Instance.RegisterPendingDeath(this);
+        }
     }
 
     public int GetCurrentHP(string bodyPart)
     {
-        switch (bodyPart)
+        return bodyPart switch
         {
-            case "Head":
-                return HeadHP;
-            case "Torso":
-                return TorsoHP;
-            case "Arms":
-                return ArmsHP;
-            case "Legs":
-                return LegsHP;
-            default:
-                return 0;
-        }
+            "Head" => HeadHP,
+            "Torso" => TorsoHP,
+            "Arms" => ArmsHP,
+            "Legs" => LegsHP,
+            _ => 0,
+        };
     }
 
     public int GetMaxHP(string bodyPart)
     {
-        switch (bodyPart)
+        return bodyPart switch
         {
-            case "Head":
-                return MaxHeadHP;
-            case "Torso":
-                return MaxTorsoHP;
-            case "Arms":
-                return MaxArmsHP;
-            case "Legs":
-                return MaxLegsHP;
-            default:
-                return 0;
-        }
+            "Head" => MaxHeadHP,
+            "Torso" => MaxTorsoHP,
+            "Arms" => MaxArmsHP,
+            "Legs" => MaxLegsHP,
+            _ => 0,
+        };
     }
 
     public void Die()
     {
         Debug.Log($"{name} погиб!");
 
-        if (IsPlayer)
-        {
-            GameManager.Instance.gameUI.LogAction("<b>Игрок проиграл!</b>");
-        }
-        else
-        {
-            GameManager.Instance.gameUI.LogAction("<b>Игрок победил!</b>");
-        }
-
-        GameManager.Instance.EndBattle(this);
+        // Осталось для отладки, но фактически теперь не вызывается напрямую
+        GameManager.Instance.RegisterPendingDeath(this);
     }
 
     public void SetDefense(string bodyPart)

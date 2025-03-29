@@ -207,46 +207,55 @@ GameCanvas [True]
       - RectTransform
       - CanvasRenderer
       - TextMeshProUGUI
-----PlayerLegsLine [True]
+--PlayerLegsLine [True]
+    - RectTransform
+    - CanvasRenderer
+    - Image
+----PlayerLegsHPText [True]
       - RectTransform
       - CanvasRenderer
-      - Image
-------PlayerLegsHPText [True]
-        - RectTransform
-        - CanvasRenderer
-        - TextMeshProUGUI
-----EnemyLegsLine [True]
+      - TextMeshProUGUI
+--EnemyHeadLine [True]
+    - RectTransform
+    - CanvasRenderer
+    - Image
+----EnemyHeadHPText [True]
       - RectTransform
       - CanvasRenderer
-      - Image
-------EnemyLegsHPText [True]
-        - RectTransform
-        - CanvasRenderer
-        - TextMeshProUGUI
-------EnemyTorsoLine [True]
-        - RectTransform
-        - CanvasRenderer
-        - Image
---------EnemyTorsoHPText [True]
-          - RectTransform
-          - CanvasRenderer
-          - TextMeshProUGUI
-------EnemyArmsLine [True]
-        - RectTransform
-        - CanvasRenderer
-        - Image
---------EnemyArmsHPText [True]
-          - RectTransform
-          - CanvasRenderer
-          - TextMeshProUGUI
-----EnemyHeadLine [True]
+      - TextMeshProUGUI
+--EnemyTorsoLine [True]
+    - RectTransform
+    - CanvasRenderer
+    - Image
+----EnemyTorsoHPText [True]
       - RectTransform
       - CanvasRenderer
-      - Image
-------EnemyHeadHPText [True]
-        - RectTransform
-        - CanvasRenderer
-        - TextMeshProUGUI
+      - TextMeshProUGUI
+--EnemyArmsLine [True]
+    - RectTransform
+    - CanvasRenderer
+    - Image
+----EnemyArmsHPText [True]
+      - RectTransform
+      - CanvasRenderer
+      - TextMeshProUGUI
+--EnemyLegsLine [True]
+    - RectTransform
+    - CanvasRenderer
+    - Image
+----EnemyLegsHPText [True]
+      - RectTransform
+      - CanvasRenderer
+      - TextMeshProUGUI
+--GameResultPanel [True]
+    - RectTransform
+    - CanvasRenderer
+    - Image
+    - CanvasGroup
+----GameResultText [True]
+      - RectTransform
+      - CanvasRenderer
+      - TextMeshProUGUI
 SceneHierarchyExporter [True]
   - Transform
   - SceneHierarchyExporter

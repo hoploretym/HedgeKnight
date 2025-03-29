@@ -20,6 +20,7 @@ public class GameManager : MonoBehaviour
     private bool waitingForChoices = true;
     public bool battleEnded = false;
     private int turnNumber = 1;
+    private Character pendingLoser = null;
 
     public enum Outcome
     {
@@ -114,7 +115,7 @@ public class GameManager : MonoBehaviour
 
         waitingForChoices = false;
 
-        // ✅ Сбрасываем защиту до применения карт
+        // ✅ Сбрасываем защиту ДО применения карт
         player.ResetDefense();
         enemy.ResetDefense();
 
@@ -153,10 +154,8 @@ public class GameManager : MonoBehaviour
                 enemy.UseEnergy(enemyChosenCard.EnergyCost);
         }
 
+        // Сброс выбранной карты
         playerSelectedCard = null;
-
-        if (CheckBattleEnd())
-            return;
 
         // 🔁 Добор карт
         int playerHandBefore = playerHand.cardsInHand.Count;
@@ -176,11 +175,22 @@ public class GameManager : MonoBehaviour
                 roundLog.Add("<color=yellow>Противник добирает карту</color>");
         }
 
+        // ✅ Только теперь — обновляем UI
         gameUI.UpdateEnergy(player, enemy);
         gameUI.RefreshHandUI();
         gameUI.LogRoundResults(roundLog);
-
         gameUI.UpdateAllHPText();
+
+        // ✅ Завершение боя после отображения логов
+        if (pendingLoser != null)
+        {
+            EndBattle(pendingLoser);
+            return;
+        }
+
+        if (CheckBattleEnd())
+            return;
+
         turnNumber++;
         waitingForChoices = true;
     }
@@ -304,6 +314,12 @@ public class GameManager : MonoBehaviour
         return log;
     }
 
+    public void RegisterPendingDeath(Character c)
+    {
+        if (!battleEnded && pendingLoser == null)
+            pendingLoser = c;
+    }
+
     public bool CheckBattleEnd()
     {
         if (battleEnded)
@@ -329,12 +345,13 @@ public class GameManager : MonoBehaviour
             return;
 
         battleEnded = true;
-        string result = loser.IsPlayer
-            ? "<b><color=red>Игрок проиграл!</color></b>"
-            : "<b><color=green>Игрок победил!</color></b>";
 
-        gameUI.ClearLog();
-        gameUI.LogAction(result);
-        Debug.Log(result);
+        bool playerLost = loser.IsPlayer;
+
+        string resultMessage = playerLost ? "Игрок проиграл!" : "Игрок победил!";
+
+        Debug.Log(resultMessage);
+
+        gameUI.ShowGameResult(!playerLost);
     }
 }
