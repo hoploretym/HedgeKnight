@@ -180,6 +180,7 @@ public class GameManager : MonoBehaviour
         gameUI.RefreshHandUI();
         gameUI.LogRoundResults(roundLog);
 
+        gameUI.UpdateAllHPText();
         turnNumber++;
         waitingForChoices = true;
     }

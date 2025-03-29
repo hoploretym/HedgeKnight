@@ -28,6 +28,17 @@ public class GameUI : MonoBehaviour
     public Image enemyArmsMask; // Прозрачная окрашиваемая маска, которая лежит на руках
     public Image enemyLegsMask; // Прозрачная окрашиваемая маска, которая лежит на ногах
 
+    // Текстовое отображение ХП частей тела
+    public TextMeshProUGUI playerHeadHPText;
+    public TextMeshProUGUI playerTorsoHPText;
+    public TextMeshProUGUI playerArmsHPText;
+    public TextMeshProUGUI playerLegsHPText;
+
+    public TextMeshProUGUI enemyHeadHPText;
+    public TextMeshProUGUI enemyTorsoHPText;
+    public TextMeshProUGUI enemyArmsHPText;
+    public TextMeshProUGUI enemyLegsHPText;
+
     // Переменные цветов для отображения урона
     private readonly Color lightRed = new Color(240f / 255f, 128f / 255f, 128f / 255f, 1f); // Светло-красный цвет после получения 1ед. урона
     private readonly Color darkRed = new Color(139f / 255f, 0f, 0f, 1f); // Темно-красный цвет после получения максимального урона по ХП
@@ -147,6 +158,32 @@ public class GameUI : MonoBehaviour
         }
 
         UpdateDamageMask(targetMask, currentHP, maxHP);
+    }
+
+    public void UpdateAllHPText()
+    {
+        if (GameManager.Instance == null)
+            return;
+
+        Character player = GameManager.Instance.playerController.GetCharacter();
+        Character enemy = GameManager.Instance.enemyController.GetCharacter();
+
+        UpdateSingleHPText(player, playerHeadHPText, "Head");
+        UpdateSingleHPText(player, playerTorsoHPText, "Torso");
+        UpdateSingleHPText(player, playerArmsHPText, "Arms");
+        UpdateSingleHPText(player, playerLegsHPText, "Legs");
+
+        UpdateSingleHPText(enemy, enemyHeadHPText, "Head");
+        UpdateSingleHPText(enemy, enemyTorsoHPText, "Torso");
+        UpdateSingleHPText(enemy, enemyArmsHPText, "Arms");
+        UpdateSingleHPText(enemy, enemyLegsHPText, "Legs");
+    }
+
+    private void UpdateSingleHPText(Character c, TextMeshProUGUI text, string part)
+    {
+        if (text == null || c == null)
+            return;
+        text.text = $"{c.GetCurrentHP(part)}";
     }
 
     private void UpdateDamageMask(Image mask, int currentHP, int maxHP)
