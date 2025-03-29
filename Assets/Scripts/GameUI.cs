@@ -165,6 +165,28 @@ public class GameUI : MonoBehaviour
         UpdateDamageMask(targetMask, currentHP, maxHP);
     }
 
+    private IEnumerator FlashHitMask(Image mask, Color targetColor)
+    {
+        if (mask == null)
+            yield break;
+
+        float duration = 0.2f;
+        float elapsed = 0f;
+
+        mask.color = Color.white;
+
+        while (elapsed < duration)
+        {
+            float t = elapsed / duration;
+            Color lerped = Color.Lerp(Color.white, targetColor, t);
+            mask.color = lerped;
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        mask.color = targetColor;
+    }
+
     public void UpdateAllHPText()
     {
         if (GameManager.Instance == null)
@@ -207,7 +229,7 @@ public class GameUI : MonoBehaviour
             Debug.Log(
                 $"[UpdateDamageMask] {mask.name}: HP {currentHP}/{maxHP} → {damagePercent * 100:F0}% урона → цвет {newColor}"
             );
-            mask.color = newColor;
+            StartCoroutine(FlashHitMask(mask, newColor));
         }
     }
 
