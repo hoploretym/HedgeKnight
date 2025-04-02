@@ -55,7 +55,7 @@ public class GameUI : MonoBehaviour
     public TextMeshProUGUI gameResultText;
 
     private List<string> logHistory = new List<string>();
-    private const int maxLogs = 7;
+    private const int maxLogs = 4;
 
     void Start()
     {
@@ -101,22 +101,20 @@ public class GameUI : MonoBehaviour
 
     public void LogAction(string message)
     {
-        if (logText != null)
+        Debug.Log($"[LogAction] {message}");
+
+        logHistory.Add(message);
+
+        // ⚠️ НЕ обрезаем до maxLogs!
+        // Иначе ScrollView не будет знать, что есть лишние строки
+
+        logText.text = string.Join("\n", logHistory);
+
+        // ⬇️ Автоскролл вниз (опционально — можешь убрать)
+        if (logScroll != null)
         {
-            logHistory.Add(message);
-
-            if (logHistory.Count > maxLogs)
-            {
-                logHistory.RemoveAt(0);
-            }
-
-            logText.text = string.Join("\n", logHistory);
-
-            if (logScroll != null)
-            {
-                Canvas.ForceUpdateCanvases();
-                logScroll.verticalNormalizedPosition = 0f;
-            }
+            Canvas.ForceUpdateCanvases();
+            logScroll.verticalNormalizedPosition = 0f;
         }
     }
 
@@ -170,7 +168,7 @@ public class GameUI : MonoBehaviour
         if (mask == null)
             yield break;
 
-        float duration = 0.2f;
+        float duration = 0.7f;
         float elapsed = 0f;
 
         mask.color = Color.white;
@@ -210,7 +208,10 @@ public class GameUI : MonoBehaviour
     {
         if (text == null || c == null)
             return;
-        text.text = $"{c.GetCurrentHP(part)}";
+
+        int current = c.GetCurrentHP(part);
+        int max = c.GetMaxHP(part);
+        text.text = $"{current}/{max}";
     }
 
     private void UpdateDamageMask(Image mask, int currentHP, int maxHP)

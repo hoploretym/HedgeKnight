@@ -39,11 +39,33 @@ GameCanvas [True]
     - RectTransform
     - GameUI
     - TooltipUIController
---LogText [True]
+--BattleLogScroll  [True]
     - RectTransform
     - CanvasRenderer
-    - TextMeshProUGUI
-    - ContentSizeFitter
+    - Image
+    - ScrollRect
+----Viewport [True]
+      - RectTransform
+      - CanvasRenderer
+      - Image
+      - Mask
+------LogText [True]
+        - RectTransform
+        - CanvasRenderer
+        - TextMeshProUGUI
+        - ContentSizeFitter
+        - VerticalLayoutGroup
+----Scrollbar Vertical [True]
+      - RectTransform
+      - CanvasRenderer
+      - Image
+      - Scrollbar
+------Sliding Area [True]
+        - RectTransform
+--------Handle [True]
+          - RectTransform
+          - CanvasRenderer
+          - Image
 --StartButton [True]
     - RectTransform
     - CanvasRenderer

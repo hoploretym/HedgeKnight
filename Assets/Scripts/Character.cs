@@ -21,8 +21,9 @@ public class Character : MonoBehaviour
 
     private bool isArmDisabled = false;
     private bool isLegDisabled = false;
-
+    public string Name;
     public bool IsPlayer;
+    private bool isDead = false;
 
     private Dictionary<string, bool> defense = new Dictionary<string, bool>();
 
@@ -37,6 +38,11 @@ public class Character : MonoBehaviour
         ResetDefense();
     }
 
+    public bool IsDead()
+    {
+        return HeadHP <= 0 || TorsoHP <= 0;
+    }
+
     public void UseEnergy(int amount)
     {
         Energy = Mathf.Max(0, Energy - amount);
@@ -49,6 +55,9 @@ public class Character : MonoBehaviour
 
     public void TakeDamage(int amount, string bodyPart)
     {
+        if (isDead)
+            return;
+
         if (IsDefended(bodyPart))
         {
             Debug.Log($"{name} заблокировал удар в {bodyPart}!");
@@ -79,10 +88,21 @@ public class Character : MonoBehaviour
 
         GameManager.Instance.gameUI.UpdateCharacterDamage(this, bodyPart, GetCurrentHP(bodyPart));
 
-        if (HeadHP == 0 || TorsoHP == 0)
+        if ((HeadHP == 0 || TorsoHP == 0) && !isDead)
         {
-            GameManager.Instance.RegisterPendingDeath(this);
+            Die();
         }
+    }
+
+    public void Die()
+    {
+        if (isDead)
+            return;
+
+        isDead = true;
+
+        Debug.Log($"{name} погиб!");
+        GameManager.Instance.RegisterPendingDeath(this);
     }
 
     public int GetCurrentHP(string bodyPart)
@@ -107,14 +127,6 @@ public class Character : MonoBehaviour
             "Legs" => MaxLegsHP,
             _ => 0,
         };
-    }
-
-    public void Die()
-    {
-        Debug.Log($"{name} погиб!");
-
-        // Осталось для отладки, но фактически теперь не вызывается напрямую
-        GameManager.Instance.RegisterPendingDeath(this);
     }
 
     public void SetDefense(string bodyPart)

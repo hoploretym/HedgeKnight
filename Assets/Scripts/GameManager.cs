@@ -22,9 +22,6 @@ public class GameManager : MonoBehaviour
     private int turnNumber = 1;
     private Character pendingLoser = null;
 
-    private bool playerDead = false;
-    private bool enemyDead = false;
-
     public enum Outcome
     {
         Win,
@@ -83,128 +80,113 @@ public class GameManager : MonoBehaviour
     {
         if (!waitingForChoices)
             return;
-
         if (index < 0 || index >= playerHand.cardsInHand.Count)
+            return;
+
+        Card selected = playerHand.cardsInHand[index];
+
+        // ❗ Проверка энергии
+        if (player.Energy < selected.EnergyCost)
         {
-            Debug.LogError(
-                $"[PlayerSelectCard] Ошибка: Некорректный индекс карты ({index})! Карт в руке: {playerHand.cardsInHand.Count}"
-            );
+            Debug.Log("Недостаточно энергии для использования этой карты!");
+            gameUI.LogAction("<color=red>Недостаточно энергии!</color>");
             return;
         }
 
-        Card selectedCard = playerHand.cardsInHand[index];
+        playerSelectedCard = selected;
+        gameUI.UpdateCardSelection(new List<Card> { selected });
+    }
 
-        if (playerSelectedCard == selectedCard)
+    private string GetCardHexColor(CardType type)
+    {
+        return type switch
         {
-            playerSelectedCard = null;
-            gameUI.UpdateCardSelection(new List<Card>());
-            Debug.Log($"[GameManager] Снято выделение с карты: {selectedCard.Name}");
-        }
-        else
-        {
-            playerSelectedCard = selectedCard;
-            gameUI.UpdateCardSelection(new List<Card> { playerSelectedCard });
-            Debug.Log($"[GameManager] Выбрана карта: {selectedCard.Name}");
-        }
+            CardType.Attack => "#FF0000", // red
+            CardType.Defense => "#0000FF", // blue
+            CardType.Special => "#FFA500", // orange
+            _ => "#FFFFFF", // white (fallback)
+        };
     }
 
     public void FinishTurn()
     {
         if (playerSelectedCard == null)
         {
-            gameUI.LogAction("<color=red>Выберите карту перед завершением хода!</color>");
+            gameUI.LogAction("<color=red>Select a card before ending the turn!</color>");
             return;
         }
 
         waitingForChoices = false;
 
-        // ✅ Сбрасываем защиту ДО применения карт
         player.ResetDefense();
         enemy.ResetDefense();
 
         enemyChosenCard = enemyHand.GetRandomCard();
 
         List<string> roundLog = new List<string>();
-        roundLog.Add($"<b>Ход {turnNumber}.</b>");
+        roundLog.Add($"<b>Turn {turnNumber}.</b>");
 
-        // 💥 Применяем карту игрока
+        // Debug
+        Debug.Log(
+            $"Player plays: {playerSelectedCard.Name} -> {playerSelectedCard.TargetBodyPart}"
+        );
+        Debug.Log($"Enemy plays: {enemyChosenCard.Name} -> {enemyChosenCard.TargetBodyPart}");
+
+        // Цветовые логи
+        string playerColor = GetCardHexColor(playerSelectedCard.Type);
+        string enemyColor = GetCardHexColor(enemyChosenCard.Type);
+
+        roundLog.Add(
+            $"<b>Card played:</b> <color={playerColor}>{playerSelectedCard.Name} [{playerSelectedCard.TargetBodyPart}]</color>"
+        );
+        roundLog.Add(
+            $"<b>Enemy played:</b> <color={enemyColor}>{enemyChosenCard.Name} [{enemyChosenCard.TargetBodyPart}]</color>"
+        );
+
+        // Эффекты карт
         string result = ApplyCardEffects(playerSelectedCard, player, enemy, enemyChosenCard);
-        roundLog.Add($"<b>Сыграна карта:</b> {playerSelectedCard.Name}");
-        roundLog.Add($"Эффект: {result}");
-        playerHand.RemoveCard(playerSelectedCard);
+        roundLog.Add($"Effect: {result}");
 
+        // Энергия
         if (playerSelectedCard.Type == CardType.Defense)
             player.GainEnergy(Mathf.Abs(playerSelectedCard.EnergyCost));
         else
             player.UseEnergy(playerSelectedCard.EnergyCost);
 
-        // 💥 Применяем карту врага
-        if (enemyChosenCard != null)
-        {
-            string enemyResult = ApplyCardEffects(
-                enemyChosenCard,
-                enemy,
-                player,
-                playerSelectedCard
-            );
-            roundLog.Add($"<b>Противник сыграл карту:</b> {enemyChosenCard.Name}");
-            roundLog.Add($"Эффект: {enemyResult}");
-            enemyHand.RemoveCard(enemyChosenCard);
+        if (enemyChosenCard.Type == CardType.Defense)
+            enemy.GainEnergy(Mathf.Abs(enemyChosenCard.EnergyCost));
+        else
+            enemy.UseEnergy(enemyChosenCard.EnergyCost);
 
-            if (enemyChosenCard.Type == CardType.Defense)
-                enemy.GainEnergy(Mathf.Abs(enemyChosenCard.EnergyCost));
-            else
-                enemy.UseEnergy(enemyChosenCard.EnergyCost);
-        }
-
-        // Сброс выбранной карты
+        // Сброс карт
+        playerHand.RemoveCard(playerSelectedCard);
+        enemyHand.RemoveCard(enemyChosenCard);
         playerSelectedCard = null;
 
-        // 🔁 Добор карт
-        int playerHandBefore = playerHand.cardsInHand.Count;
-        int enemyHandBefore = enemyHand.CardsInHandCount;
+        // Добор (только Debug.Log)
+        Card playerDrawn = playerHand.DrawOneCard();
+        if (playerDrawn != null)
+            Debug.Log($"Player draws: {playerDrawn.Name}");
 
-        if (playerHandBefore > 0)
-        {
-            Card newCard = playerHand.DrawOneCard();
-            if (newCard != null)
-                roundLog.Add($"<color=yellow>Игрок добирает карту: {newCard.Name}</color>");
-        }
+        Card enemyDrawn = enemyHand.DrawOneCard();
+        if (enemyDrawn != null)
+            Debug.Log($"Enemy draws: {enemyDrawn.Name}");
 
-        if (enemyHandBefore > 0)
-        {
-            Card newCard = enemyHand.DrawOneCard();
-            if (newCard != null)
-                roundLog.Add("<color=yellow>Противник добирает карту</color>");
-        }
-
-        // ✅ Только теперь — обновляем UI
+        // Обновления
         gameUI.UpdateEnergy(player, enemy);
         gameUI.RefreshHandUI();
         gameUI.LogRoundResults(roundLog);
         gameUI.UpdateAllHPText();
 
-        // ✅ Завершение боя после отображения логов
-        if (pendingLoser != null)
-        {
-            EndBattle(pendingLoser);
-            return;
-        }
-
-        if (playerDead && enemyDead)
-        {
-            EndBattle(player); // Игрок проигрывает при ничьей
-            return;
-        }
-
-        if (playerDead)
+        if (player.IsDead() && enemy.IsDead())
         {
             EndBattle(player);
             return;
         }
-        if (enemyDead)
+
+        if (pendingLoser != null)
         {
-            EndBattle(enemy);
+            EndBattle(pendingLoser);
             return;
         }
 
@@ -246,7 +228,9 @@ public class GameManager : MonoBehaviour
         if (sameTarget)
             finalDamage *= 2;
 
-        string log = "";
+        string log = $"{card.Name} -> {card.TargetBodyPart}";
+        if (sameTarget)
+            log += " (x2)";
 
         switch (card.Type)
         {
@@ -254,53 +238,43 @@ public class GameManager : MonoBehaviour
                 switch (result)
                 {
                     case Outcome.Win:
-                        log += "Победа: удар проходит!";
                         defender.TakeDamage(finalDamage, card.TargetBodyPart);
+                        log += " – Hit!";
                         break;
 
                     case Outcome.Lose:
-                        log += "Проигрыш: атака заблокирована.";
-                        if (sameTarget)
-                        {
-                            int energyGain = Mathf.Abs(enemyCard.EnergyCost) * 2;
-                            defender.GainEnergy(energyGain);
-                            log += $" Противник восстанавливает {energyGain} энергии!";
-                        }
+                        log += " – Blocked.";
                         break;
 
                     case Outcome.Tie:
-                        log += "Ничья: обмен ударами!";
                         defender.TakeDamage(finalDamage, card.TargetBodyPart);
-                        attacker.TakeDamage(
-                            sameTarget ? enemyCard.Damage * 2 : enemyCard.Damage,
-                            enemyCard.TargetBodyPart
-                        );
+
+                        int retaliationDmg = enemyCard.Damage;
+                        if (enemyCard.TargetBodyPart == card.TargetBodyPart)
+                            retaliationDmg *= 2;
+
+                        attacker.TakeDamage(retaliationDmg, enemyCard.TargetBodyPart);
+                        log +=
+                            $" – Tie. {defender.Name} takes {finalDamage}, {attacker.Name} takes {retaliationDmg}";
                         break;
                 }
                 break;
 
             case CardType.Defense:
-                int energyToGain = Mathf.Abs(card.EnergyCost);
                 switch (result)
                 {
                     case Outcome.Win:
-                        if (sameTarget)
-                            energyToGain *= 2;
-                        attacker.GainEnergy(energyToGain);
-                        log += $"Победа: восстановлено {energyToGain} энергии.";
+                        log += " – Energy restored.";
                         break;
 
                     case Outcome.Lose:
-                        attacker.GainEnergy(energyToGain);
                         int incomingDamage = sameTarget ? enemyCard.Damage * 2 : enemyCard.Damage;
                         attacker.TakeDamage(incomingDamage, enemyCard.TargetBodyPart);
-                        log +=
-                            $"Проигрыш: получен урон {incomingDamage}, восстановлено {energyToGain} энергии.";
+                        log += $" – Block failed. Took {incomingDamage}.";
                         break;
 
                     case Outcome.Tie:
-                        attacker.GainEnergy(energyToGain);
-                        log += $"Ничья: восстановлено {energyToGain} энергии.";
+                        log += " – Partial block.";
                         break;
                 }
                 break;
@@ -309,23 +283,23 @@ public class GameManager : MonoBehaviour
                 switch (result)
                 {
                     case Outcome.Win:
-                        log += "Победа: специальный приём сработал!";
                         defender.TakeDamage(finalDamage, card.TargetBodyPart);
+                        log += " – Special success!";
                         break;
 
                     case Outcome.Lose:
                         int dmg = sameTarget ? enemyCard.Damage * 2 : enemyCard.Damage;
                         attacker.TakeDamage(dmg, enemyCard.TargetBodyPart);
-                        log += $"Проигрыш: получен урон {dmg}.";
+                        log += $" – Countered. Took {dmg}.";
                         break;
 
                     case Outcome.Tie:
-                        log += "Ничья: обмен ударами!";
                         defender.TakeDamage(finalDamage, card.TargetBodyPart);
-                        attacker.TakeDamage(
-                            sameTarget ? enemyCard.Damage * 2 : enemyCard.Damage,
-                            enemyCard.TargetBodyPart
-                        );
+
+                        int counterDmg = sameTarget ? enemyCard.Damage * 2 : enemyCard.Damage;
+                        attacker.TakeDamage(counterDmg, enemyCard.TargetBodyPart);
+                        log +=
+                            $" – Tie. {defender.Name} takes {finalDamage}, {attacker.Name} takes {counterDmg}";
                         break;
                 }
                 break;
@@ -336,13 +310,10 @@ public class GameManager : MonoBehaviour
 
     public void RegisterPendingDeath(Character c)
     {
-        if (battleEnded)
-            return;
-
-        if (c.IsPlayer)
-            playerDead = true;
-        else
-            enemyDead = true;
+        if (!battleEnded && pendingLoser == null)
+        {
+            pendingLoser = c;
+        }
     }
 
     public bool CheckBattleEnd()
@@ -355,11 +326,13 @@ public class GameManager : MonoBehaviour
             EndBattle(player);
             return true;
         }
+
         if (enemy.HeadHP <= 0 || enemy.TorsoHP <= 0)
         {
             EndBattle(enemy);
             return true;
         }
+
         return false;
     }
 
@@ -369,8 +342,6 @@ public class GameManager : MonoBehaviour
             return;
 
         battleEnded = true;
-        playerDead = false;
-        enemyDead = false;
 
         bool playerLost = loser.IsPlayer;
         string resultMessage = playerLost ? "Игрок проиграл!" : "Игрок победил!";
