@@ -54,6 +54,9 @@ public class GameUI : MonoBehaviour
     public CanvasGroup gameResultPanel;
     public TextMeshProUGUI gameResultText;
 
+    public Slider playerEnergyBar;
+    public Slider enemyEnergyBar;
+
     private List<string> logHistory = new List<string>();
     private const int maxLogs = 4;
 
@@ -306,9 +309,14 @@ public class GameUI : MonoBehaviour
     public void UpdateEnergy(Character player, Character enemy)
     {
         if (playerEnergyText != null)
-            playerEnergyText.text = $"Энергия: {player.Energy}/30";
+            playerEnergyText.text = $"Energy: {player.Energy}/30";
         if (enemyEnergyText != null)
-            enemyEnergyText.text = $"Энергия: {enemy.Energy}/30";
+            enemyEnergyText.text = $"Energy: {enemy.Energy}/30";
+
+        if (playerEnergyBar != null)
+            playerEnergyBar.value = player.Energy;
+        if (enemyEnergyBar != null)
+            enemyEnergyBar.value = enemy.Energy;
     }
 
     public void ShowGameResult(bool isPlayerWin)

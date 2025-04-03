@@ -278,6 +278,32 @@ GameCanvas [True]
       - RectTransform
       - CanvasRenderer
       - TextMeshProUGUI
+--PlayerEnergyBar [True]
+    - RectTransform
+    - Slider
+----Background [True]
+      - RectTransform
+      - CanvasRenderer
+      - Image
+----Fill Area [True]
+      - RectTransform
+------Fill [True]
+        - RectTransform
+        - CanvasRenderer
+        - Image
+--EnemyEnergyBar [True]
+    - RectTransform
+    - Slider
+----Background [True]
+      - RectTransform
+      - CanvasRenderer
+      - Image
+----Fill Area [True]
+      - RectTransform
+------Fill [True]
+        - RectTransform
+        - CanvasRenderer
+        - Image
 SceneHierarchyExporter [True]
   - Transform
   - SceneHierarchyExporter
