@@ -164,14 +164,6 @@ GameCanvas [True]
     - RectTransform
     - CanvasRenderer
     - TextMeshProUGUI
---TooltipPanel [False]
-    - RectTransform
-    - CanvasRenderer
-    - Image
-----TooltipText [True]
-      - RectTransform
-      - CanvasRenderer
-      - TextMeshProUGUI
 --CardPrefab [True]
     - RectTransform
     - CanvasRenderer
@@ -193,6 +185,10 @@ GameCanvas [True]
       - CanvasRenderer
       - TextMeshProUGUI
       - ContentSizeFitter
+----DescriptionText [True]
+      - RectTransform
+      - CanvasRenderer
+      - TextMeshProUGUI
 ----EnergyCostCircle [True]
       - RectTransform
       - CanvasRenderer
@@ -201,10 +197,6 @@ GameCanvas [True]
         - RectTransform
         - CanvasRenderer
         - TextMeshProUGUI
-----TargetBodyPartText [True]
-      - RectTransform
-      - CanvasRenderer
-      - TextMeshProUGUI
 --PlayerHeadLine [True]
     - RectTransform
     - CanvasRenderer
@@ -304,12 +296,77 @@ GameCanvas [True]
         - RectTransform
         - CanvasRenderer
         - Image
-SceneHierarchyExporter [True]
-  - Transform
-  - SceneHierarchyExporter
+--DebuffIcons_Player [True]
+    - RectTransform
+    - HorizontalLayoutGroup
+    - ContentSizeFitter
+----HeadDebuff [True]
+      - RectTransform
+      - CanvasRenderer
+      - Image
+      - TooltipTrigger
+----TorsoDebuff [True]
+      - RectTransform
+      - CanvasRenderer
+      - Image
+      - TooltipTrigger
+----ArmsDebuff [True]
+      - RectTransform
+      - CanvasRenderer
+      - Image
+      - TooltipTrigger
+----LegsDebuff [True]
+      - RectTransform
+      - CanvasRenderer
+      - Image
+      - TooltipTrigger
+--DebuffIcons_Enemy [True]
+    - RectTransform
+    - HorizontalLayoutGroup
+    - ContentSizeFitter
+----HeadDebuff [True]
+      - RectTransform
+      - CanvasRenderer
+      - Image
+      - TooltipTrigger
+----TorsoDebuff [True]
+      - RectTransform
+      - CanvasRenderer
+      - Image
+      - TooltipTrigger
+----ArmsDebuff [True]
+      - RectTransform
+      - CanvasRenderer
+      - Image
+      - TooltipTrigger
+----LegsDebuff [True]
+      - RectTransform
+      - CanvasRenderer
+      - Image
+      - TooltipTrigger
 PlayerEnergyIcon [True]
   - Transform
   - SpriteRenderer
 EnemyrEnergyIcon [True]
   - Transform
   - SpriteRenderer
+SceneHierarchyExporter [True]
+  - Transform
+  - SceneHierarchyExporter
+TooltipCanvas [True]
+  - RectTransform
+  - Canvas
+  - CanvasScaler
+  - GraphicRaycaster
+--TooltipPanel [False]
+    - RectTransform
+    - CanvasRenderer
+    - Image
+    - VerticalLayoutGroup
+    - ContentSizeFitter
+    - CanvasGroup
+----TooltipText [True]
+      - RectTransform
+      - CanvasRenderer
+      - TextMeshProUGUI
+      - ContentSizeFitter

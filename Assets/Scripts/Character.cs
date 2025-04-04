@@ -25,6 +25,8 @@ public class Character : MonoBehaviour
     public bool IsPlayer;
     private bool isDead = false;
 
+    private Dictionary<string, bool> debuffs = new Dictionary<string, bool>();
+
     private Dictionary<string, bool> defense = new Dictionary<string, bool>();
 
     void Awake()
@@ -53,6 +55,16 @@ public class Character : MonoBehaviour
         Energy = Mathf.Min(MaxEnergy, Energy + amount);
     }
 
+    void CheckAndApplyDebuff(string part, int currentHP, int maxHP)
+    {
+        if (currentHP < maxHP / 2 && !HasDebuff(part))
+        {
+            debuffs[part] = true;
+            Debug.Log($"Дебафф наложен: {GetDebuffName(part)} на {Name}");
+            GameManager.Instance.gameUI.ShowDebuffIcon(this, part, GetDebuffName(part));
+        }
+    }
+
     public void TakeDamage(int amount, string bodyPart)
     {
         if (isDead)
@@ -70,17 +82,24 @@ public class Character : MonoBehaviour
         {
             case "Head":
                 HeadHP = Mathf.Max(0, HeadHP - amount);
+                CheckAndApplyDebuff("Head", HeadHP, MaxHeadHP);
                 break;
+
             case "Torso":
                 TorsoHP = Mathf.Max(0, TorsoHP - amount);
+                CheckAndApplyDebuff("Torso", TorsoHP, MaxTorsoHP);
                 break;
+
             case "Arms":
                 ArmsHP = Mathf.Max(0, ArmsHP - amount);
+                CheckAndApplyDebuff("Arms", ArmsHP, MaxArmsHP);
                 if (ArmsHP == 0)
                     isArmDisabled = true;
                 break;
+
             case "Legs":
                 LegsHP = Mathf.Max(0, LegsHP - amount);
+                CheckAndApplyDebuff("Legs", LegsHP, MaxLegsHP);
                 if (LegsHP == 0)
                     isLegDisabled = true;
                 break;
@@ -92,6 +111,23 @@ public class Character : MonoBehaviour
         {
             Die();
         }
+    }
+
+    public bool HasDebuff(string bodyPart)
+    {
+        return debuffs.ContainsKey(bodyPart) && debuffs[bodyPart];
+    }
+
+    public string GetDebuffName(string bodyPart)
+    {
+        return bodyPart switch
+        {
+            "Head" => "Broken Helmet",
+            "Torso" => "Broken Stance",
+            "Arms" => "Unsteady Grip",
+            "Legs" => "Slow Movement",
+            _ => "",
+        };
     }
 
     public void Die()

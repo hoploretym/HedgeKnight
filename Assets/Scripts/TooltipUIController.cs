@@ -9,26 +9,43 @@ public class TooltipUIController : MonoBehaviour
     public TextMeshProUGUI tooltipText;
 
     private bool isShowing = false;
-    private Vector3 offset = new Vector3(20f, -20f, 0f);
+    private Vector2 offset = new Vector2(20f, 30f);
 
     void Awake()
     {
         Instance = this;
         Hide();
+
+        // Убедимся, что CanvasGroup настроен
+        CanvasGroup cg = tooltipPanel.GetComponent<CanvasGroup>();
+        if (cg == null)
+            cg = tooltipPanel.gameObject.AddComponent<CanvasGroup>();
+
+        cg.alpha = 1f;
+        cg.interactable = false;
+        cg.blocksRaycasts = false;
     }
 
     void Update()
     {
         if (isShowing)
         {
-            Vector3 worldPos = Camera.main.ScreenToWorldPoint(
-                Input.mousePosition + new Vector3(20f, -20f, 100f)
+            Vector2 tooltipSize = tooltipPanel.sizeDelta;
+            Vector3 mousePos = Input.mousePosition + (Vector3)offset;
+
+            float padding = 10f;
+            float clampedX = Mathf.Clamp(
+                mousePos.x,
+                padding,
+                Screen.width - tooltipSize.x - padding
             );
-            tooltipPanel.position = Vector3.Lerp(
-                tooltipPanel.position,
-                worldPos,
-                15f * Time.deltaTime
+            float clampedY = Mathf.Clamp(
+                mousePos.y,
+                padding,
+                Screen.height - tooltipSize.y - padding
             );
+
+            tooltipPanel.position = new Vector2(clampedX, clampedY);
         }
     }
 
@@ -37,7 +54,6 @@ public class TooltipUIController : MonoBehaviour
         tooltipText.text = text;
         tooltipPanel.gameObject.SetActive(true);
         isShowing = true;
-        tooltipPanel.position = new Vector3(300, 300, 0); // Центр экрана
     }
 
     public void Hide()

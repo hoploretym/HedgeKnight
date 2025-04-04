@@ -10,6 +10,7 @@ public class CardButton : MonoBehaviour
     public Image CardImage;
     public Outline cardOutline; // ← ВОТ ЗДЕСЬ!
     private Button button;
+    public TextMeshProUGUI descriptionText;
 
     public TextMeshProUGUI targetBodyPartText;
 
@@ -42,6 +43,16 @@ public class CardButton : MonoBehaviour
 
         if (targetBodyPartText != null)
             targetBodyPartText.text = card.TargetBodyPart.ToString();
+
+        if (descriptionText != null)
+        {
+            if (Card.Type == CardType.Attack || Card.Type == CardType.Special)
+                descriptionText.text = $"Deals {Card.Damage} damage to {Card.TargetBodyPart}";
+            else if (Card.Type == CardType.Defense)
+                descriptionText.text = $"Defends all parts but {Card.TargetBodyPart}";
+            else
+                descriptionText.text = "";
+        }
 
         UpdateCardAppearance();
 

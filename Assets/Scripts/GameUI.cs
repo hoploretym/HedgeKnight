@@ -57,6 +57,20 @@ public class GameUI : MonoBehaviour
     public Slider playerEnergyBar;
     public Slider enemyEnergyBar;
 
+    public Image playerHeadDebuffIcon;
+    public Image playerTorsoDebuffIcon;
+    public Image playerArmsDebuffIcon;
+    public Image playerLegsDebuffIcon;
+
+    public Image enemyHeadDebuffIcon;
+    public Image enemyTorsoDebuffIcon;
+    public Image enemyArmsDebuffIcon;
+    public Image enemyLegsDebuffIcon;
+
+    public GameObject debuffIconPrefab;
+    public Transform playerDebuffContainer;
+    public Transform enemyDebuffContainer;
+
     private List<string> logHistory = new List<string>();
     private const int maxLogs = 4;
 
@@ -79,7 +93,7 @@ public class GameUI : MonoBehaviour
         startButton.gameObject.SetActive(false);
         endTurnButton.gameObject.SetActive(true);
         restartButton.gameObject.SetActive(true);
-
+        HideAllDebuffIcons();
         ResetDamageMasks();
     }
 
@@ -186,6 +200,55 @@ public class GameUI : MonoBehaviour
         }
 
         mask.color = targetColor;
+    }
+
+    public void ShowDebuffIcon(Character character, string bodyPart, string debuffName)
+    {
+        Transform parent = character.IsPlayer ? playerDebuffContainer : enemyDebuffContainer;
+
+        // Проверка: не добавлен ли уже такой дебафф
+        foreach (Transform child in parent)
+        {
+            TooltipTrigger existing = child.GetComponent<TooltipTrigger>();
+            if (existing != null && existing.tooltipText.StartsWith($"<b>{debuffName}</b>"))
+                return;
+        }
+
+        GameObject iconGO = Instantiate(debuffIconPrefab, parent);
+        Image img = iconGO.GetComponent<Image>();
+        TooltipTrigger tooltip = iconGO.GetComponent<TooltipTrigger>();
+
+        // Подставим спрайт по названию (например, Resources.Load)
+        Sprite iconSprite = Resources.Load<Sprite>($"Debuffs/{debuffName}");
+        if (iconSprite != null)
+            img.sprite = iconSprite;
+
+        tooltip.tooltipText = $"<b>{debuffName}</b>\n{GetDebuffDescription(debuffName)}";
+    }
+
+    private string GetDebuffDescription(string name)
+    {
+        return name switch
+        {
+            "Broken Helmet" => "Reduces perception.",
+            "Broken Stance" => "Harder to block attacks.",
+            "Unsteady Grip" => "Reduces attack strength.",
+            "Slow Movement" => "Reduces evasion chance.",
+            _ => "Unknown effect.",
+        };
+    }
+
+    void HideAllDebuffIcons()
+    {
+        playerHeadDebuffIcon.gameObject.SetActive(false);
+        playerTorsoDebuffIcon.gameObject.SetActive(false);
+        playerArmsDebuffIcon.gameObject.SetActive(false);
+        playerLegsDebuffIcon.gameObject.SetActive(false);
+
+        enemyHeadDebuffIcon.gameObject.SetActive(false);
+        enemyTorsoDebuffIcon.gameObject.SetActive(false);
+        enemyArmsDebuffIcon.gameObject.SetActive(false);
+        enemyLegsDebuffIcon.gameObject.SetActive(false);
     }
 
     public void UpdateAllHPText()
