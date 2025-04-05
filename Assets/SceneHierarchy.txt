@@ -93,6 +93,15 @@ GameCanvas [True]
       - RectTransform
       - CanvasRenderer
       - TextMeshProUGUI
+--SkipTurnButton [True]
+    - RectTransform
+    - CanvasRenderer
+    - Image
+    - Button
+----Text (TMP) [True]
+      - RectTransform
+      - CanvasRenderer
+      - TextMeshProUGUI
 --DeckManager [True]
     - Transform
     - Deck

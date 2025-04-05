@@ -20,6 +20,9 @@ public class GameManager : MonoBehaviour
     private bool waitingForChoices = true;
     public bool battleEnded = false;
     private int turnNumber = 1;
+    private bool playerSkipped = false;
+    private bool enemySkipped = false;
+
     private Character pendingLoser = null;
 
     public enum Outcome
@@ -78,6 +81,19 @@ public class GameManager : MonoBehaviour
         enemyHand.DrawNewHand();
     }
 
+    public void SkipTurn()
+    {
+        if (!waitingForChoices)
+            return;
+
+        playerSelectedCard = null;
+        playerSkipped = true;
+        enemySkipped = false;
+
+        Debug.Log("[GameManager] Игрок нажал Skip Turn.");
+        FinishTurn();
+    }
+
     public void PlayerSelectCard(int index)
     {
         if (!waitingForChoices)
@@ -112,101 +128,155 @@ public class GameManager : MonoBehaviour
 
     public void FinishTurn()
     {
-        if (playerSelectedCard == null)
+        if (playerSelectedCard != null)
+        {
+            playerSkipped = false;
+        }
+        if (playerSelectedCard == null && !playerSkipped)
         {
             gameUI.LogAction("<color=red>Select a card before ending the turn!</color>");
             return;
         }
 
         waitingForChoices = false;
-
         player.ResetDefense();
         enemy.ResetDefense();
 
-        enemyChosenCard = enemyHand.GetRandomCard();
+        // Выбор карты врагом с учётом энергии
+        enemySkipped = false;
+        enemyChosenCard = null;
 
-        List<string> roundLog = new List<string>();
-        roundLog.Add($"<b>Turn {turnNumber}.</b>");
-
-        // Debug
-        Debug.Log(
-            $"Player plays: {playerSelectedCard.Name} -> {playerSelectedCard.TargetBodyPart}"
-        );
-        Debug.Log($"Enemy plays: {enemyChosenCard.Name} -> {enemyChosenCard.TargetBodyPart}");
-
-        // Цветовые логи
-        string playerColor = GetCardHexColor(playerSelectedCard.Type);
-        string enemyColor = GetCardHexColor(enemyChosenCard.Type);
-
-        roundLog.Add(
-            $"<b>Card played:</b> <color={playerColor}>{playerSelectedCard.Name} [{playerSelectedCard.TargetBodyPart}]</color>"
-        );
-        roundLog.Add(
-            $"<b>Enemy played:</b> <color={enemyColor}>{enemyChosenCard.Name} [{enemyChosenCard.TargetBodyPart}]</color>"
-        );
-
-        // Эффекты карт
-        string result = ApplyCardEffects(playerSelectedCard, player, enemy, enemyChosenCard);
-        roundLog.Add($"Effect: {result}");
-
-        // Энергия
-        // Игрок
-        if (playerSelectedCard.Type == CardType.Defense)
+        foreach (Card card in enemyHand.cardsInHand)
         {
-            player.GainEnergy(Mathf.Abs(playerSelectedCard.EnergyCost));
+            int cost = card.EnergyCost;
+            if (
+                (card.Type == CardType.Attack || card.Type == CardType.Special)
+                && enemy.HasDebuff("Legs")
+            )
+                cost += 1;
+
+            if (enemy.Energy >= cost)
+            {
+                enemyChosenCard = card;
+                break;
+            }
+        }
+
+        // Если подходящей карты нет, добираем карты до появления защиты или пока не закончатся
+        while (enemyChosenCard == null)
+        {
+            Card drawn = enemyHand.DrawOneCard();
+            if (drawn == null)
+            {
+                enemySkipped = true;
+                break;
+            }
+
+            int cost = drawn.EnergyCost;
+            if (
+                (drawn.Type == CardType.Attack || drawn.Type == CardType.Special)
+                && enemy.HasDebuff("Legs")
+            )
+                cost += 1;
+
+            if (enemy.Energy >= cost)
+            {
+                enemyChosenCard = drawn;
+            }
+        }
+
+        List<string> roundLog = new List<string> { $"<b>Turn {turnNumber}.</b>" };
+
+        if (!playerSkipped && playerSelectedCard != null)
+        {
+            string playerColor = GetCardHexColor(playerSelectedCard.Type);
+            roundLog.Add(
+                $"<b>Card played:</b> <color={playerColor}>{playerSelectedCard.Name} [{playerSelectedCard.TargetBodyPart}]</color>"
+            );
         }
         else
         {
-            int cost = playerSelectedCard.EnergyCost;
-            if (
-                (
-                    playerSelectedCard.Type == CardType.Attack
-                    || playerSelectedCard.Type == CardType.Special
-                ) && player.HasDebuff("Legs")
-            )
-            {
-                cost += 1;
-                Debug.Log("Slow Movement: Стоимость карты игрока увеличена на 1.");
-            }
-            player.UseEnergy(cost);
+            roundLog.Add("<b>Card played:</b> <color=grey>Skipped</color>");
         }
 
-        // Враг
-        if (enemyChosenCard.Type == CardType.Defense)
+        if (!enemySkipped && enemyChosenCard != null)
         {
-            enemy.GainEnergy(Mathf.Abs(enemyChosenCard.EnergyCost));
+            string enemyColor = GetCardHexColor(enemyChosenCard.Type);
+            roundLog.Add(
+                $"<b>Enemy played:</b> <color={enemyColor}>{enemyChosenCard.Name} [{enemyChosenCard.TargetBodyPart}]</color>"
+            );
+        }
+
+        if (playerSkipped && !enemySkipped)
+        {
+            roundLog.Add($"<color=grey>{player.Name} skips their turn.</color>");
+            roundLog.Add($"Effect: {ApplyCardEffects(enemyChosenCard, enemy, player, null)}");
+        }
+        else if (!playerSkipped && enemySkipped)
+        {
+            roundLog.Add($"<color=grey>{enemy.Name} skips their turn.</color>");
+            roundLog.Add($"Effect: {ApplyCardEffects(playerSelectedCard, player, enemy, null)}");
         }
         else
         {
-            int cost = enemyChosenCard.EnergyCost;
-            if (
-                (
-                    enemyChosenCard.Type == CardType.Attack
-                    || enemyChosenCard.Type == CardType.Special
-                ) && enemy.HasDebuff("Legs")
-            )
+            roundLog.Add(
+                $"Effect: {ApplyCardEffects(playerSelectedCard, player, enemy, enemyChosenCard)}"
+            );
+        }
+
+        // Энергия игрока
+        if (!playerSkipped && playerSelectedCard != null)
+        {
+            if (playerSelectedCard.Type == CardType.Defense)
+                player.GainEnergy(Mathf.Abs(playerSelectedCard.EnergyCost));
+            else
             {
-                cost += 1;
-                Debug.Log("Slow Movement: Стоимость карты врага увеличена на 1.");
+                int cost = playerSelectedCard.EnergyCost;
+                if (
+                    (
+                        playerSelectedCard.Type == CardType.Attack
+                        || playerSelectedCard.Type == CardType.Special
+                    ) && player.HasDebuff("Legs")
+                )
+                    cost += 1;
+                player.UseEnergy(cost);
             }
-            enemy.UseEnergy(cost);
+        }
+
+        // Энергия врага
+        if (!enemySkipped && enemyChosenCard != null)
+        {
+            if (enemyChosenCard.Type == CardType.Defense)
+                enemy.GainEnergy(Mathf.Abs(enemyChosenCard.EnergyCost));
+            else
+            {
+                int cost = enemyChosenCard.EnergyCost;
+                if (
+                    (
+                        enemyChosenCard.Type == CardType.Attack
+                        || enemyChosenCard.Type == CardType.Special
+                    ) && enemy.HasDebuff("Legs")
+                )
+                    cost += 1;
+                enemy.UseEnergy(cost);
+            }
         }
 
         // Сброс карт
-        playerHand.RemoveCard(playerSelectedCard);
-        enemyHand.RemoveCard(enemyChosenCard);
+        if (playerSelectedCard != null)
+            playerHand.RemoveCard(playerSelectedCard);
+        if (enemyChosenCard != null)
+            enemyHand.RemoveCard(enemyChosenCard);
         playerSelectedCard = null;
+        enemyChosenCard = null;
 
-        // Добор (только Debug.Log)
-        Card playerDrawn = playerHand.DrawOneCard();
-        if (playerDrawn != null)
+        // Добор карт
+        if (playerHand.DrawOneCard() is Card playerDrawn)
             Debug.Log($"Player draws: {playerDrawn.Name}");
-
-        Card enemyDrawn = enemyHand.DrawOneCard();
-        if (enemyDrawn != null)
+        if (enemyHand.DrawOneCard() is Card enemyDrawn)
             Debug.Log($"Enemy draws: {enemyDrawn.Name}");
 
-        // Обновления
+        // Обновление
         playerHand.UpdateHandUI();
         gameUI.UpdateEnergy(player, enemy);
         gameUI.RefreshHandUI();
@@ -218,15 +288,14 @@ public class GameManager : MonoBehaviour
             EndBattle(player);
             return;
         }
-
         if (pendingLoser != null)
         {
             EndBattle(pendingLoser);
             return;
         }
-
         if (CheckBattleEnd())
             return;
+
         if (player.HasDebuff("Head"))
             player.IncrementBrokenHelmetCounter();
 
@@ -260,6 +329,18 @@ public class GameManager : MonoBehaviour
         Card enemyCard
     )
     {
+        // ✅ Обработка случая: игрок пропускает ход
+        if (card == null)
+        {
+            return ApplySoloCardEffect(enemyCard, defender, attacker);
+        }
+
+        if (enemyCard == null)
+        {
+            return ApplySoloCardEffect(card, attacker, defender);
+        }
+
+        // 🔽 Обычная логика
         Outcome result = GetOutcome(card.Type, enemyCard.Type);
         bool sameTarget = card.TargetBodyPart == enemyCard.TargetBodyPart;
 
@@ -353,6 +434,36 @@ public class GameManager : MonoBehaviour
         }
 
         return log;
+    }
+
+    private string ApplySoloCardEffect(Card card, Character attacker, Character target)
+    {
+        if (card == null)
+            return $"{attacker.Name} skipped their turn.";
+
+        int finalDamage = card.Damage;
+        if (
+            (card.Type == CardType.Attack || card.Type == CardType.Special)
+            && attacker.HasDebuff("Arms")
+        )
+        {
+            finalDamage = Mathf.Max(0, finalDamage - 1);
+        }
+
+        switch (card.Type)
+        {
+            case CardType.Attack:
+            case CardType.Special:
+                target.TakeDamage(finalDamage, card.TargetBodyPart);
+                return $"{attacker.Name} plays {card.Name} -> {card.TargetBodyPart} – Hit!";
+
+            case CardType.Defense:
+                attacker.SetDefense(card.TargetBodyPart);
+                return $"{attacker.Name} braces for impact (defends {card.TargetBodyPart}).";
+
+            default:
+                return $"{attacker.Name} plays an unknown move.";
+        }
     }
 
     public void RegisterPendingDeath(Character c)

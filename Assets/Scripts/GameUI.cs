@@ -15,6 +15,9 @@ public class GameUI : MonoBehaviour
     public TextMeshProUGUI logText; // Логирование боя
     public ScrollRect logScroll; // Ответственен за скролл логов боя
 
+    [SerializeField]
+    private Button skipTurnButton;
+
     // Спрайты и маски отображения частей тела Player
     public Image playerBaseSprite; // Базовый спрайт рыцаря Player
     public Image playerHeadMask; // Прозрачная окрашиваемая маска, которая лежит на голове
@@ -81,6 +84,7 @@ public class GameUI : MonoBehaviour
         endTurnButton.onClick.AddListener(EndTurn);
         restartButton.onClick.AddListener(RestartBattle);
         restartButton.gameObject.SetActive(false);
+        skipTurnButton.onClick.AddListener(OnSkipTurnPressed);
         DebugAllBodyParts();
         ResetDamageMasks();
     }
@@ -106,6 +110,11 @@ public class GameUI : MonoBehaviour
     {
         GameManager.Instance.battleEnded = false;
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    public void OnSkipTurnPressed()
+    {
+        GameManager.Instance.SkipTurn();
     }
 
     public void LogRoundResults(List<string> roundLog)
