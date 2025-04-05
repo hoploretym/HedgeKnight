@@ -122,12 +122,34 @@ public class HandManager : MonoBehaviour
 
     public Card DrawOneCard()
     {
+        Character character = GameManager.Instance.playerController.GetCharacter();
+
+        if (character != null && character.ShouldDrawOneLessCard())
+        {
+            Debug.Log("[HandManager] Эффект Broken Helmet: карта не добирается в этот ход.");
+            return null;
+        }
+
         Card newCard = deck.DrawCard();
         if (newCard != null)
         {
             cardsInHand.Add(newCard);
             CreateCardUI(newCard);
         }
+
         return newCard;
+    }
+
+    public void UpdateHandUI()
+    {
+        foreach (Transform child in handPanel)
+        {
+            CardButton cardButton = child.GetComponent<CardButton>();
+            if (cardButton != null)
+            {
+                cardButton.UpdateDescription();
+                cardButton.UpdateEnergyCost();
+            }
+        }
     }
 }

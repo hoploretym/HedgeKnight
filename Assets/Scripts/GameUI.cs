@@ -230,10 +230,10 @@ public class GameUI : MonoBehaviour
     {
         return name switch
         {
-            "Broken Helmet" => "Reduces perception.",
-            "Broken Stance" => "Harder to block attacks.",
-            "Unsteady Grip" => "Reduces attack strength.",
-            "Slow Movement" => "Reduces evasion chance.",
+            "Broken Helmet" => "Draws 1 fewer card every second turn.",
+            "Broken Stance" => "Loses 1 energy at the start of each turn.",
+            "Unsteady Grip" => "Attack and special cards deal 1 less damage.",
+            "Slow Movement" => "Attack and special cards cost 1 more energy.",
             _ => "Unknown effect.",
         };
     }

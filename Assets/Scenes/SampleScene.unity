@@ -299,7 +299,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e7ae662c3a5fa3043aa12533254c2b8d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tooltipText: Broken Stance\nHarder to block attacks.
+  tooltipText: Broken Stance\nLoses 1 energy at the start of each turn.
 --- !u!1 &76326023
 GameObject:
   m_ObjectHideFlags: 0
@@ -426,7 +426,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e7ae662c3a5fa3043aa12533254c2b8d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tooltipText: Slow Movement\nLower chance to dodge.
+  tooltipText: Slow Movement\nAttack and special cards cost 1 more energy.
 --- !u!114 &86179222
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -929,7 +929,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e7ae662c3a5fa3043aa12533254c2b8d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tooltipText: Broken Stance\nHarder to block attacks.
+  tooltipText: Broken Stance\nLoses 1 energy at the start of each turn.
 --- !u!114 &212592228
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3607,7 +3607,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e7ae662c3a5fa3043aa12533254c2b8d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tooltipText: Unsteady Grip\nReduced attack strength.
+  tooltipText: Unsteady Grip\nAttack and special cards deal 1 less damage.
 --- !u!1 &884000710
 GameObject:
   m_ObjectHideFlags: 0
@@ -4063,7 +4063,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e7ae662c3a5fa3043aa12533254c2b8d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tooltipText: Unsteady Grip\nReduced attack strength.
+  tooltipText: Unsteady Grip\nAttack and special cards deal 1 less damage.
 --- !u!114 &1017075441
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4832,7 +4832,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e7ae662c3a5fa3043aa12533254c2b8d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tooltipText: Slow Movement\nLower chance to dodge.
+  tooltipText: Slow Movement\nAttack and special cards cost 1 more energy.
 --- !u!1 &1311683580
 GameObject:
   m_ObjectHideFlags: 0
@@ -7159,7 +7159,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e7ae662c3a5fa3043aa12533254c2b8d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tooltipText: Broken Helmet\nReduces perception.
+  tooltipText: Broken Helmet\nDraws 1 fewer card every second turn.
 --- !u!1 &1848279339
 GameObject:
   m_ObjectHideFlags: 0
@@ -7598,7 +7598,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e7ae662c3a5fa3043aa12533254c2b8d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tooltipText: Broken Helmet\nReduces perception.
+  tooltipText: Broken Helmet\nDraws 1 fewer card every second turn.
 --- !u!114 &1997088548
 MonoBehaviour:
   m_ObjectHideFlags: 0

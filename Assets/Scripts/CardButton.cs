@@ -37,8 +37,25 @@ public class CardButton : MonoBehaviour
 
         if (energyCostText != null)
         {
-            string prefix = Card.Type == CardType.Defense ? "+" : "-";
-            energyCostText.text = $"{prefix}{Mathf.Abs(Card.EnergyCost)}";
+            int displayCost = Card.EnergyCost;
+            bool hasSlowMovement = false;
+
+            if ((Card.Type == CardType.Attack || Card.Type == CardType.Special))
+            {
+                Character player = GameManager.Instance?.playerController?.GetCharacter();
+                if (player != null && player.HasDebuff("Legs"))
+                {
+                    displayCost += 1;
+                    hasSlowMovement = true;
+                }
+            }
+
+            string prefix = displayCost < 0 ? "+" : "-";
+            string costText = hasSlowMovement
+                ? $"{prefix}<color=red>{Mathf.Abs(displayCost)}</color>"
+                : $"{prefix}{Mathf.Abs(displayCost)}";
+
+            energyCostText.text = costText;
         }
 
         if (targetBodyPartText != null)
@@ -47,17 +64,92 @@ public class CardButton : MonoBehaviour
         if (descriptionText != null)
         {
             if (Card.Type == CardType.Attack || Card.Type == CardType.Special)
-                descriptionText.text = $"Deals {Card.Damage} damage to {Card.TargetBodyPart}";
+            {
+                int displayDamage = Card.Damage;
+
+                Character player = GameManager.Instance?.playerController?.GetCharacter();
+                if (player != null && player.HasDebuff("Arms"))
+                {
+                    displayDamage = Mathf.Max(0, displayDamage - 1);
+                    descriptionText.text =
+                        $"<color=red>Deals {displayDamage}</color> damage to {Card.TargetBodyPart} <size=70%><i>(Unsteady Grip)</i></size>";
+                }
+                else
+                {
+                    descriptionText.text = $"Deals {displayDamage} damage to {Card.TargetBodyPart}";
+                }
+            }
             else if (Card.Type == CardType.Defense)
+            {
                 descriptionText.text = $"Defends all parts but {Card.TargetBodyPart}";
+            }
             else
+            {
                 descriptionText.text = "";
+            }
         }
 
         UpdateCardAppearance();
 
         if (cardOutline != null)
             cardOutline.enabled = false;
+    }
+
+    public void UpdateDescription()
+    {
+        if (descriptionText == null || Card == null)
+            return;
+
+        if (Card.Type == CardType.Attack || Card.Type == CardType.Special)
+        {
+            int displayDamage = Card.Damage;
+
+            Character player = GameManager.Instance?.playerController?.GetCharacter();
+            if (player != null && player.HasDebuff("Arms"))
+            {
+                displayDamage = Mathf.Max(0, displayDamage - 1);
+                descriptionText.text =
+                    $"Deals <color=red>{displayDamage}</color> damage to {Card.TargetBodyPart} <size=70%><i>(Unsteady Grip)</i></size>";
+            }
+            else
+            {
+                descriptionText.text = $"Deals {displayDamage} damage to {Card.TargetBodyPart}";
+            }
+        }
+        else if (Card.Type == CardType.Defense)
+        {
+            descriptionText.text = $"Defends all parts but {Card.TargetBodyPart}";
+        }
+        else
+        {
+            descriptionText.text = "";
+        }
+    }
+
+    public void UpdateEnergyCost()
+    {
+        if (energyCostText == null || Card == null)
+            return;
+
+        int displayCost = Card.EnergyCost;
+        bool hasSlowMovement = false;
+
+        if ((Card.Type == CardType.Attack || Card.Type == CardType.Special))
+        {
+            Character player = GameManager.Instance?.playerController?.GetCharacter();
+            if (player != null && player.HasDebuff("Legs"))
+            {
+                displayCost += 1;
+                hasSlowMovement = true;
+            }
+        }
+
+        string prefix = displayCost < 0 ? "+" : "-";
+        string costText = hasSlowMovement
+            ? $"{prefix}<color=red>{Mathf.Abs(displayCost)}</color>"
+            : $"{prefix}{Mathf.Abs(displayCost)}";
+
+        energyCostText.text = costText;
     }
 
     public void SetOutline(bool enabled)

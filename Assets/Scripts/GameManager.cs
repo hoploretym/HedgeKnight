@@ -69,6 +69,8 @@ public class GameManager : MonoBehaviour
 
         player.ResetEnergy();
         enemy.ResetEnergy();
+        player.ApplyStartOfTurnEffects();
+        enemy.ApplyStartOfTurnEffects();
 
         gameUI.UpdateEnergy(player, enemy);
 
@@ -148,15 +150,47 @@ public class GameManager : MonoBehaviour
         roundLog.Add($"Effect: {result}");
 
         // Энергия
+        // Игрок
         if (playerSelectedCard.Type == CardType.Defense)
+        {
             player.GainEnergy(Mathf.Abs(playerSelectedCard.EnergyCost));
+        }
         else
-            player.UseEnergy(playerSelectedCard.EnergyCost);
+        {
+            int cost = playerSelectedCard.EnergyCost;
+            if (
+                (
+                    playerSelectedCard.Type == CardType.Attack
+                    || playerSelectedCard.Type == CardType.Special
+                ) && player.HasDebuff("Legs")
+            )
+            {
+                cost += 1;
+                Debug.Log("Slow Movement: Стоимость карты игрока увеличена на 1.");
+            }
+            player.UseEnergy(cost);
+        }
 
+        // Враг
         if (enemyChosenCard.Type == CardType.Defense)
+        {
             enemy.GainEnergy(Mathf.Abs(enemyChosenCard.EnergyCost));
+        }
         else
-            enemy.UseEnergy(enemyChosenCard.EnergyCost);
+        {
+            int cost = enemyChosenCard.EnergyCost;
+            if (
+                (
+                    enemyChosenCard.Type == CardType.Attack
+                    || enemyChosenCard.Type == CardType.Special
+                ) && enemy.HasDebuff("Legs")
+            )
+            {
+                cost += 1;
+                Debug.Log("Slow Movement: Стоимость карты врага увеличена на 1.");
+            }
+            enemy.UseEnergy(cost);
+        }
 
         // Сброс карт
         playerHand.RemoveCard(playerSelectedCard);
@@ -173,6 +207,7 @@ public class GameManager : MonoBehaviour
             Debug.Log($"Enemy draws: {enemyDrawn.Name}");
 
         // Обновления
+        playerHand.UpdateHandUI();
         gameUI.UpdateEnergy(player, enemy);
         gameUI.RefreshHandUI();
         gameUI.LogRoundResults(roundLog);
@@ -192,8 +227,12 @@ public class GameManager : MonoBehaviour
 
         if (CheckBattleEnd())
             return;
+        if (player.HasDebuff("Head"))
+            player.IncrementBrokenHelmetCounter();
 
         turnNumber++;
+        player.ApplyStartOfTurnEffects();
+        enemy.ApplyStartOfTurnEffects();
         waitingForChoices = true;
     }
 
@@ -225,6 +264,14 @@ public class GameManager : MonoBehaviour
         bool sameTarget = card.TargetBodyPart == enemyCard.TargetBodyPart;
 
         int finalDamage = card.Damage;
+        if (
+            (card.Type == CardType.Attack || card.Type == CardType.Special)
+            && attacker.HasDebuff("Arms")
+        )
+        {
+            finalDamage = Mathf.Max(0, finalDamage - 1);
+            Debug.Log($"{attacker.Name} имеет дебафф Unsteady Grip — урон снижен до {finalDamage}");
+        }
         if (sameTarget)
             finalDamage *= 2;
 

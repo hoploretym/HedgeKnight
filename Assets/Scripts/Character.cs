@@ -25,6 +25,8 @@ public class Character : MonoBehaviour
     public bool IsPlayer;
     private bool isDead = false;
 
+    private int headDebuffTurnCounter = 0;
+
     private Dictionary<string, bool> debuffs = new Dictionary<string, bool>();
 
     private Dictionary<string, bool> defense = new Dictionary<string, bool>();
@@ -63,6 +65,21 @@ public class Character : MonoBehaviour
             Debug.Log($"Дебафф наложен: {GetDebuffName(part)} на {Name}");
             GameManager.Instance.gameUI.ShowDebuffIcon(this, part, GetDebuffName(part));
         }
+    }
+
+    public void ApplyStartOfTurnEffects()
+    {
+        // Эффект от Broken Stance
+        if (HasDebuff("Torso"))
+        {
+            UseEnergy(1);
+            Debug.Log($"{Name} теряет 1 энергию из-за Broken Stance.");
+            GameManager.Instance.gameUI.LogAction(
+                $"<color=orange>{Name} теряет 1 энергию из-за Broken Stance.</color>"
+            );
+        }
+
+        // В будущем сюда добавим другие эффекты
     }
 
     public void TakeDamage(int amount, string bodyPart)
@@ -105,6 +122,11 @@ public class Character : MonoBehaviour
                 break;
         }
 
+        if (HasDebuff("Head"))
+        {
+            headDebuffTurnCounter++;
+        }
+
         GameManager.Instance.gameUI.UpdateCharacterDamage(this, bodyPart, GetCurrentHP(bodyPart));
 
         if ((HeadHP == 0 || TorsoHP == 0) && !isDead)
@@ -128,6 +150,21 @@ public class Character : MonoBehaviour
             "Legs" => "Slow Movement",
             _ => "",
         };
+    }
+
+    public bool ShouldDrawOneLessCard()
+    {
+        return HasDebuff("Head") && headDebuffTurnCounter % 2 == 1;
+    }
+
+    public void IncrementBrokenHelmetCounter()
+    {
+        headDebuffTurnCounter++;
+    }
+
+    public void ResetDebuffCounters()
+    {
+        headDebuffTurnCounter = 0;
     }
 
     public void Die()
